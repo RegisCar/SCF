@@ -1,0 +1,4511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCF · Sistema Conselho Fiscal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<style>
+  :root{
+    --purple-deep: #3E2069;
+    --purple: #4C2A85;
+    --purple-light: #6B3FA0;
+    --purple-pale: #EFEAFB;
+    --lavender-bg: #F3EFFB;
+    --gold: #C79A3B;
+    --gold-soft: #F1E4C4;
+    --ink: #241B3A;
+    --ink-soft: #6B6280;
+    --white: #FFFFFF;
+    --line: #E3DCF4;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body{
+    font-family: 'Inter', sans-serif;
+    background: var(--lavender-bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---------- HEADER ---------- */
+  header{
+    background: linear-gradient(135deg, var(--purple-deep), var(--purple) 55%, var(--purple-light));
+    color: white;
+    box-shadow: 0 2px 14px rgba(62,32,105,0.25);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .top-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    gap: 20px;
+  }
+
+  .brand{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-seal{
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, var(--gold-soft), var(--gold) 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--purple-deep);
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.18), inset 0 1px 2px rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
+
+  .brand-text .name{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+  }
+  .brand-text .subtitle{
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.72);
+    letter-spacing: 0.4px;
+    margin-top: 2px;
+  }
+
+  .user-panel{
+    text-align: right;
+    line-height: 1.35;
+  }
+  .user-panel .who{
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: rgba(255,255,255,0.95);
+  }
+  .user-panel .who span{
+    color: var(--gold-soft);
+  }
+  .user-panel .clock{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.68);
+    letter-spacing: 0.3px;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    background: rgba(0,0,0,0.14);
+    padding: 0 20px;
+    overflow-x: auto;
+  }
+  .nav-inner{
+    display: flex;
+    gap: 4px;
+  }
+  .nav-item{
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 16px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    border-bottom: 2.5px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    user-select: none;
+  }
+  .nav-item svg{ width: 15px; height: 15px; opacity: 0.85; }
+  .nav-item:hover{
+    color: white;
+    background: rgba(255,255,255,0.06);
+  }
+  .nav-item.active{
+    color: white;
+    border-bottom-color: var(--gold);
+  }
+
+  /* ---------- MAIN ---------- */
+  main{
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 28px 80px;
+  }
+
+  .welcome{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 44px;
+  }
+
+  .welcome h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 30px;
+    margin: 0 0 6px;
+    color: var(--purple-deep);
+  }
+  .welcome h1 em{
+    font-style: normal;
+    color: var(--gold);
+  }
+  .welcome p{
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+
+  .stamp{
+    flex-shrink: 0;
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    transform: rotate(-3deg);
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+  .stamp .big{
+    font-size: 12.5px;
+    font-weight: 500;
+    display: block;
+  }
+
+  /* ---------- GRID ---------- */
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 18px;
+  }
+
+  .card{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 20px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before{
+    content:"";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, var(--purple));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.22s ease;
+  }
+  .card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px rgba(76,42,133,0.14);
+    border-color: transparent;
+  }
+  .card:hover::before{ transform: scaleX(1); }
+
+  .card-icon{
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-accent-pale, var(--purple-pale));
+    color: var(--card-accent, var(--purple));
+  }
+  .card-icon svg{ width: 24px; height: 24px; }
+
+  .card .title{
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .card .desc{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: -6px;
+    line-height: 1.4;
+  }
+
+  .card.ghost{
+    background: transparent;
+    border: 1.5px dashed var(--line);
+    color: var(--ink-soft);
+  }
+  .card.ghost:hover{
+    border-color: var(--purple-light);
+    color: var(--purple);
+    transform: none;
+    box-shadow: none;
+  }
+  .card.ghost .card-icon{
+    background: transparent;
+    border: 1.5px dashed var(--line);
+    color: var(--ink-soft);
+  }
+  .card.ghost:hover .card-icon{
+    border-color: var(--purple-light);
+    color: var(--purple);
+  }
+  .card.ghost::before{ display: none; }
+
+  footer.hint{
+    text-align: center;
+    margin-top: 46px;
+    font-size: 12px;
+    color: #B7AECF;
+  }
+
+  @media (max-width: 640px){
+    .top-bar{ flex-wrap: wrap; }
+    .user-panel{ text-align: left; }
+    .welcome{ flex-direction: column; }
+    main{ padding: 36px 18px 60px; }
+  }
+
+  /* ---------- VIEWS ---------- */
+  .view{ display: none; }
+  .view.active{ display: block; }
+
+  .back-link{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--purple);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 18px;
+    user-select: none;
+  }
+  .back-link svg{ width: 14px; height: 14px; }
+  .back-link:hover{ text-decoration: underline; }
+
+  .module-header{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 26px;
+  }
+  .module-header .card-icon{ width: 44px; height: 44px; }
+  .module-header .card-icon svg{ width: 20px; height: 20px; }
+  .module-header h2{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0;
+    color: var(--purple-deep);
+  }
+  .module-header p{
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .panel-box{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 28px;
+    margin-bottom: 24px;
+  }
+  .panel-box h3{
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+    font-weight: 600;
+  }
+
+  .form-row{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 4px;
+  }
+
+  .field{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .field label .code{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--purple);
+    font-weight: 500;
+  }
+  .field input{
+    border: 1.5px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: #FBFAFE;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .field input:focus{
+    outline: none;
+    border-color: var(--purple-light);
+    background: white;
+  }
+
+  .section-divider{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 22px 0 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: var(--purple);
+  }
+  .section-divider::after{
+    content:"";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .form-actions{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .btn-primary{
+    background: var(--purple);
+    color: white;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn-primary:hover{ background: var(--purple-deep); }
+  .btn-primary:disabled{ opacity: 0.6; cursor: default; }
+
+  .save-status{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .save-status.ok{ color: #2C7A5B; }
+  .save-status.err{ color: #B5402C; }
+
+  .table-toolbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .month-picker{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .month-picker input{
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+  }
+  .link-btn{
+    background: none;
+    border: none;
+    color: var(--purple-deep, #5B3A8E);
+    font-size: 12.5px;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    font-family: inherit;
+  }
+  .mes-bloco{
+    margin-bottom: 22px;
+  }
+  .mes-bloco:last-child{
+    margin-bottom: 0;
+  }
+  .mes-titulo{
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--purple-deep, #5B3A8E);
+    text-transform: capitalize;
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--line);
+  }
+  .obs-item{
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+  .obs-item-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .obs-item-header strong{
+    text-transform: capitalize;
+    color: var(--purple-deep, #5B3A8E);
+  }
+  .obs-item-header .edit{
+    color: var(--purple-deep, #5B3A8E);
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .obs-item-header .edit:hover{ text-decoration: underline; }
+  .obs-item-header .del{
+    color: #B5402C;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .obs-item-header .del:hover{ text-decoration: underline; }
+  .obs-item-header .sep{ color: var(--ink-soft); margin: 0 4px; }
+  .obs-item-texto{
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .obs-preview{
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--ink);
+    white-space: pre-wrap;
+    background: #FAFAFC;
+    min-height: 40px;
+  }
+  .obs-preview.vazio{
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  table.data-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table thead th{
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--ink-soft);
+    padding: 8px 10px;
+    border-bottom: 1.5px solid var(--line);
+  }
+  .data-table thead th.num{ text-align: right; }
+  .data-table td{
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .data-table td.num{ text-align: right; font-family: 'IBM Plex Mono', monospace; }
+  .data-table tbody tr:hover{ background: var(--purple-pale); }
+  .data-table tfoot td{
+    padding: 10px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    border-top: 2px solid var(--line);
+    color: var(--purple-deep);
+  }
+  .data-table td.del{
+    color: #B5402C;
+    cursor: pointer;
+    text-align: center;
+    font-size: 12px;
+  }
+  .data-table td.del:hover{ text-decoration: underline; }
+  .data-table td.acoes{
+    text-align: center;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .data-table td.acoes .edit{
+    color: var(--purple-deep, #5B3A8E);
+    cursor: pointer;
+  }
+  .data-table td.acoes .edit:hover{ text-decoration: underline; }
+  .data-table td.acoes .del{
+    color: #B5402C;
+    cursor: pointer;
+  }
+  .data-table td.acoes .del:hover{ text-decoration: underline; }
+  .data-table td.acoes .sep{ color: var(--ink-soft); margin: 0 4px; }
+  tr.linha-recente{
+    animation: flashRecente 2.5s ease-out;
+  }
+  @keyframes flashRecente{
+    0% { background-color: #FFF3B0; }
+    100% { background-color: transparent; }
+  }
+
+  .field select{
+    border: 1.5px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: #FBFAFE;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .field select:focus{
+    outline: none;
+    border-color: var(--purple-light);
+    background: white;
+  }
+
+  .status-badge{
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .status-badge.ok{ background: #DFF0E8; color: #2C7A5B; }
+  .status-badge.pendente{ background: #FBE3DC; color: #B5402C; }
+  .status-badge.vazio{ background: var(--purple-pale); color: var(--ink-soft); }
+
+  .field textarea{
+    border: 1.5px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: #FBFAFE;
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.5;
+  }
+  .field textarea:focus{
+    outline: none;
+    border-color: var(--purple-light);
+    background: white;
+  }
+  .field textarea[readonly]{
+    background: #F3F1F8;
+    color: var(--ink-soft);
+    cursor: not-allowed;
+  }
+  .field.full{ grid-column: 1 / -1; }
+
+  .parecer-list-item{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .parecer-list-item .info{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .parecer-list-item .competencia{
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--purple-deep);
+    font-family: 'Fraunces', serif;
+  }
+  .parecer-list-item .meta{
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .parecer-list-item .acoes{
+    display: flex;
+    gap: 8px;
+  }
+  .btn-secundario{
+    background: white;
+    border: 1.5px solid var(--purple);
+    color: var(--purple);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-secundario:hover{ background: var(--purple-pale); }
+  .btn-excluir-parecer{
+    background: none;
+    border: none;
+    color: #B5402C;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 7px 6px;
+  }
+  .btn-excluir-parecer:hover{ text-decoration: underline; }
+
+  /* ---------- FOLHA DE IMPRESSÃO ---------- */
+  #printSheet{
+    position: fixed;
+    top: 0; left: -20000px;
+    width: 277mm; /* largura útil de uma A4 paisagem com margem de 10mm */
+  }
+  #printSheet .p-folha-medida{
+    transform-origin: top left;
+  }
+
+  @page{
+    size: 297mm 210mm; /* medida explícita em vez da palavra-chave "landscape" —
+      alguns destinos de impressão (impressoras reais, "Microsoft Print to PDF")
+      não respeitam bem a keyword e caem no tamanho/orientação padrão deles,
+      sobrando espaço em branco na folha. Medida explícita é respeitada de forma
+      mais consistente entre navegadores/drivers. */
+    margin: 10mm;
+  }
+
+  @media print{
+    body > *{ display: none !important; }
+    #printSheet{
+      display: block !important;
+      position: absolute;
+      top: 0; left: 0;
+    }
+  }
+
+  .p-folha{
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #000;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+  }
+  .p-folha-topo-bloco{
+    padding: 0 8mm 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  .p-folha-rodape-bloco{
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 0 8mm 0;
+    box-sizing: border-box;
+  }
+  .p-folha table{ width: 100%; border-collapse: collapse; }
+  /* ---- preenchimento via CSS puro (sem medir pixel em JS) ---- */
+  .p-folha--flex{
+    height: 190mm;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  .p-folha--flex .p-folha-topo-bloco{
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .p-folha--flex .p-folha-rodape-bloco{
+    position: static;
+    flex-shrink: 0;
+  }
+  .p-folha--flex .p-conteudo-meio{
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .p-folha--flex .p-conteudo-meio > .p-tabela-compras{
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+  }
+  .p-folha--flex .p-tabela-compras td, .p-folha--flex .p-tabela-compras th{ vertical-align: middle; }
+  .p-topo td{ font-size: 10.5px; padding: 2px 6px; vertical-align: top; }
+  .p-topo{ margin-bottom: 2.5mm; }
+  .p-titulo{
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0;
+    margin: 0 0 2.5mm;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .p-regua-grossa{
+    height: 0;
+    border-top: 3.5px solid #000;
+    flex-shrink: 0;
+  }
+  .p-regua-grossa.antes-conteudo{ margin-bottom: 1mm; }
+  .p-regua-grossa.antes-assinatura{ margin-bottom: 20mm; }
+  /* parecer de Compras: a tabela é que ocupa a folha, então mantém o vão menor acima das assinaturas */
+  .p-folha--flex .p-regua-grossa.antes-assinatura{ margin-bottom: 12mm; }
+  .p-conteudo-meio{
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .p-conteudo-meio > *:first-child{ margin-top: 0; }
+  .p-info td{ font-size: 11px; padding: 3px 8px; }
+  .p-info .lbl{ font-weight: 700; }
+  .p-setores-wrap{
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+    min-height: 0;
+  }
+  .p-setor-bloco{
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .p-setor-titulo{
+    font-weight: 700;
+    font-size: 11px;
+    background: #EFEAFB;
+    padding: 3px 8px;
+    border-left: 4px solid #4C2A85;
+    flex-shrink: 0;
+  }
+  .p-setor-texto{
+    padding: 4px 10px 2px;
+    white-space: pre-wrap;
+    line-height: 1.32;
+    font-size: 10.5px;
+  }
+  .p-assinaturas{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .p-assinatura{
+    text-align: center;
+    font-size: 11px;
+  }
+  .p-assinatura .linha{
+    border-top: 1.5px solid #000;
+    margin-bottom: 6px;
+    padding-top: 5px;
+  }
+  .p-rodape{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    font-size: 11px;
+    color: #444;
+    border-top: 1px solid #999;
+    padding-top: 6px;
+    flex-shrink: 0;
+  }
+  .p-rodape-sistema{
+    text-align: center;
+    font-size: 8.5px;
+    color: #999;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Folha de compras: sem clamp fixo — o encolhimento é calculado por medição real antes de imprimir */
+  .p-tabela-compras{
+    margin-top: 10px;
+    font-size: 9px;
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+  }
+  .p-tabela-compras th, .p-tabela-compras td{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+  .p-tabela-compras th{
+    background: #EFEAFB;
+    border: 1px solid #ccc;
+    padding: 3px 5px;
+    font-size: 9px;
+  }
+  .p-tabela-compras td{
+    border: 1px solid #ddd;
+    padding: 2px 5px;
+    font-size: 9px;
+  }
+  .p-tabela-compras td.num, .p-tabela-compras th.num{ text-align: center; }
+  .p-tabela-compras thead{ display: table-header-group; }
+  .p-tabela-compras tr{ page-break-inside: avoid; }
+
+  .field input[type="file"]{
+    border: 1.5px dashed var(--line);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 13px;
+    background: #FBFAFE;
+  }
+
+  .tabela-revisao{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    table-layout: fixed;
+  }
+  .tabela-revisao th{
+    text-align: center;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--ink-soft);
+    padding: 6px 5px;
+    border-bottom: 1.5px solid var(--line);
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+  .tabela-revisao td{
+    padding: 5px 5px;
+    border-bottom: 1px solid var(--line);
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    text-align: center;
+  }
+  .tabela-revisao td.num{ text-align: right; font-family: 'IBM Plex Mono', monospace; }
+  .tabela-revisao input[type="checkbox"]{ width: 16px; height: 16px; cursor: pointer; }
+  .tabela-revisao select{
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-size: 12px;
+    background: #FBFAFE;
+  }
+
+  .parecer-menu-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+  }
+  .parecer-menu-card{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .parecer-menu-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px rgba(76,42,133,0.14);
+  }
+  .parecer-menu-card .card-icon{
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .parecer-menu-card .card-icon svg{ width: 24px; height: 24px; }
+  .parecer-menu-card .title{ font-size: 15px; font-weight: 600; color: var(--ink); }
+  .parecer-menu-card .desc{ font-size: 12px; color: var(--ink-soft); }
+
+  .parecer-subview{ display: none; }
+  .parecer-subview.active{ display: block; }
+
+  .app-copyright{
+    text-align: center;
+    font-size: 11.5px;
+    color: #B7AECF;
+    padding: 18px 20px 26px;
+    letter-spacing: 0.3px;
+  }
+
+  .empty-state{
+    text-align: center;
+    padding: 34px 10px;
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+  /* ---------- TELA DE LOGIN ---------- */
+  #loginGate{
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--purple-deep), var(--purple) 55%, var(--purple-light));
+  }
+  .login-card{
+    background: white; border-radius: 16px;
+    padding: 32px 30px 26px; width: 100%; max-width: 380px;
+    display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  .login-card .brand-seal{ margin: 0 auto; }
+  .login-card h2{
+    font-family: 'Fraunces', serif; font-size: 22px; margin: 0;
+    color: var(--purple-deep); text-align: center;
+  }
+  .login-card p{ margin: 0; font-size: 13px; color: var(--ink-soft); text-align: center; }
+  .login-card label{
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 12px; font-weight: 600; color: var(--ink-soft);
+  }
+  .login-card input{
+    border: 1.5px solid var(--line); border-radius: 9px;
+    padding: 10px 12px; font-size: 14px; font-family: 'Inter', sans-serif; color: var(--ink);
+  }
+  .login-card input:focus{ outline: none; border-color: var(--purple-light); }
+  .login-card .link-btn{ align-self: center; }
+  .login-card .save-status{ text-align: center; min-height: 16px; }
+</style>
+</head>
+<body>
+
+<div id="loginGate">
+  <form id="loginForm" class="login-card">
+    <div class="brand-seal">SCF</div>
+    <h2>Sistema Conselho Fiscal</h2>
+    <p id="loginAviso">Entre com seu e-mail e senha.</p>
+    <label>E-mail
+      <input type="email" id="login-email" autocomplete="username" required>
+    </label>
+    <label>Senha
+      <input type="password" id="login-senha" autocomplete="current-password" required>
+    </label>
+    <button type="submit" class="btn-primary" id="btnEntrar">Entrar</button>
+    <button type="button" class="link-btn" id="btnEsqueci">Esqueci a senha</button>
+    <span class="save-status" id="loginStatus"></span>
+  </form>
+</div>
+
+<header>
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-seal">SCF</div>
+      <div class="brand-text">
+        <div class="name">SCF</div>
+        <div class="subtitle">Sistema Conselho Fiscal</div>
+      </div>
+    </div>
+    <div class="user-panel">
+      <div class="who">ADM · <span id="userLocation">ARTUR NOGUEIRA — SP</span></div>
+      <div class="clock" id="clock">carregando...</div>
+      <div class="clock" style="opacity:0.55;">versão 2026-10-14-online</div>
+      <div class="clock"><span id="userEmail"></span> <button type="button" class="link-btn" id="btnSair" style="color:rgba(255,255,255,0.85);">sair</button></div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-item active" data-target="painel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Painel
+      </div>
+      <div class="nav-item" data-target="distribuidora">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
+        Distribuidora
+      </div>
+      <div class="nav-item" data-target="tesouraria">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+        Tesouraria
+      </div>
+      <div class="nav-item" data-target="piedade">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        Piedade
+      </div>
+      <div class="nav-item" data-target="contabilidade">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v3h6V3M8 11h8M8 15h5"/></svg>
+        Contabilidade
+      </div>
+      <div class="nav-item" data-target="parecer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 17h5"/></svg>
+        Parecer
+      </div>
+      <div class="nav-item" data-target="compras">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M6 2v20"/><path d="M12 10h4M12 14h4"/></svg>
+        Compras
+      </div>
+      <div class="nav-item" data-target="secretaria">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 13h6M9 17h6"/></svg>
+        Secretaria
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===== VIEW: PAINEL ===== -->
+  <div class="view active" id="view-painel">
+    <div class="welcome">
+      <div>
+        <h1>Bem-vindo ao <em>Sistema de Dados</em> do Conselho Fiscal</h1>
+        <p>Escolha uma área para começar.</p>
+      </div>
+      <div class="stamp">
+        Protocolo ativo
+        <span class="big" id="stampDate">--/--/----</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card" data-view="distribuidora" style="--card-accent:#4C2A85; --card-accent-pale:#EFEAFB;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
+        </div>
+        <div class="title">Distribuidora</div>
+        <div class="desc">Movimentações e registros</div>
+      </div>
+
+      <div class="card" data-view="tesouraria" style="--card-accent:#B5602C; --card-accent-pale:#F7E8DB;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+        </div>
+        <div class="title">Tesouraria</div>
+        <div class="desc">Fluxo de caixa e saldos</div>
+      </div>
+
+      <div class="card" data-view="piedade" style="--card-accent:#2C7A5B; --card-accent-pale:#DFF0E8;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        </div>
+        <div class="title">Piedade</div>
+        <div class="desc">Dados da unidade</div>
+      </div>
+
+      <div class="card" data-view="contabilidade" style="--card-accent:#2C5F8A; --card-accent-pale:#DEEAF3;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v3h6V3M8 11h8M8 15h5"/></svg>
+        </div>
+        <div class="title">Contabilidade</div>
+        <div class="desc">Lançamentos e balanços</div>
+      </div>
+
+      <div class="card" data-view="parecer" style="--card-accent:#C79A3B; --card-accent-pale:#F5EBD3;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 17h5"/></svg>
+        </div>
+        <div class="title">Parecer</div>
+        <div class="desc">Parecer do Conselho Fiscal</div>
+      </div>
+
+      <div class="card" data-view="compras" style="--card-accent:#B5602C; --card-accent-pale:#F7E8DB;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M6 2v20"/><path d="M12 10h4M12 14h4"/></svg>
+        </div>
+        <div class="title">Compras</div>
+        <div class="desc">Parecer Conselho Fiscal — Compras</div>
+      </div>
+
+      <div class="card" data-view="secretaria" style="--card-accent:#8A5A2C; --card-accent-pale:#F2E6D8;">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 13h6M9 17h6"/></svg>
+        </div>
+        <div class="title">Secretaria</div>
+        <div class="desc">Observações do setor</div>
+      </div>
+
+      <div class="card ghost">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div class="title">Novo módulo</div>
+        <div class="desc">Adicionar área ao painel</div>
+      </div>
+    </div>
+
+    <div class="panel-box" style="margin-top:36px;">
+      <h3>Importar dados do computador (use uma vez só)</h3>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
+        Escolha o arquivo <strong>dados_scf.json</strong> da versão que rodava no computador. Os lançamentos e os PDFs vão para o Firebase.
+        Pode repetir sem medo: o que já existe é atualizado, não duplicado.
+      </p>
+      <div class="form-row">
+        <div class="field">
+          <label for="arquivo-importar-json">Arquivo dados_scf.json</label>
+          <input type="file" id="arquivo-importar-json" accept=".json,application/json">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="btnImportarJson">Importar para o Firebase</button>
+        <span class="save-status" id="statusImportarJson"></span>
+      </div>
+    </div>
+
+    <footer class="hint">Explore as abas acima também, se preferir.</footer>
+  </div>
+
+  <!-- ===== VIEW: DISTRIBUIDORA ===== -->
+  <div class="view" id="view-distribuidora">
+    <div class="back-link" data-back="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar ao painel
+    </div>
+
+    <div class="module-header">
+      <div class="card-icon" style="--card-accent:#4C2A85; --card-accent-pale:#EFEAFB; background:var(--card-accent-pale); color:var(--card-accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
+      </div>
+      <div>
+        <h2>Distribuidora</h2>
+        <p>Lançamentos diários de estoque e caixinha</p>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Novo lançamento</h3>
+      <form id="formDistribuidora">
+        <div class="form-row">
+          <div class="field">
+            <label for="d-data">Data</label>
+            <input type="date" id="d-data" required>
+          </div>
+          <div class="field">
+            <label for="d-competencia">Competência (mês a que se refere)</label>
+            <input type="month" id="d-competencia">
+          </div>
+        </div>
+
+        <div class="section-divider">DISTRIBUIDORA</div>
+        <div class="form-row">
+          <div class="field">
+            <label for="d-estoque1050">Estoque <span class="code">1050</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="d-estoque1050">
+          </div>
+          <div class="field">
+            <label for="d-caixinha10040">Caixinha <span class="code">10040</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="d-caixinha10040">
+          </div>
+        </div>
+
+        <div class="section-divider">FUNDO BÍBLICO</div>
+        <div class="form-row">
+          <div class="field">
+            <label for="d-estoque1053">Estoque <span class="code">1053</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="d-estoque1053">
+          </div>
+          <div class="field">
+            <label for="d-caixinha10050">Caixinha <span class="code">10050</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="d-caixinha10050">
+          </div>
+        </div>
+
+        <div class="section-divider">CONTA CORRENTE</div>
+        <div class="form-row">
+          <div class="field">
+            <label for="d-saldo10140">Saldo <span class="code">10140</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="d-saldo10140">
+          </div>
+          <div class="field">
+            <label for="d-aplicacao10340">Aplicação <span class="code">10340</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="d-aplicacao10340">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="btnSalvarDistribuidora">Salvar lançamento</button>
+          <span class="save-status" id="saveStatusDistribuidora"></span>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel-box">
+      <div class="table-toolbar">
+        <h3 style="margin:0;">Lançamentos do mês</h3>
+        <div class="month-picker">
+          Mês:
+          <input type="month" id="filtroMesDistribuidora">
+          <button type="button" class="link-btn" id="filtroMesDistribuidora-limpar">todos os meses</button>
+        </div>
+      </div>
+      <div id="tableWrapDistribuidora">
+        <div class="empty-state">Carregando lançamentos...</div>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Observação do setor (usada no Parecer)</h3>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
+        Escreve aqui o texto que vai aparecer no setor "Distribuidora" do Parecer do Conselho Fiscal, pra competência escolhida.
+      </p>
+      <form id="obsFormDistribuidora">
+        <div class="form-row">
+          <div class="field">
+            <label for="d-obs-competencia">Competência</label>
+            <input type="month" id="d-obs-competencia" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <textarea id="d-obs-texto" placeholder="Observações da Distribuidora neste mês..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="d-obs-btn">Salvar observação</button>
+          <span class="save-status" id="d-obs-status"></span>
+        </div>
+      </form>
+      <div id="d-obs-lista" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: TESOURARIA ===== -->
+  <div class="view" id="view-tesouraria">
+    <div class="back-link" data-back="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar ao painel
+    </div>
+
+    <div class="module-header">
+      <div class="card-icon" style="--card-accent:#B5602C; --card-accent-pale:#F7E8DB; background:var(--card-accent-pale); color:var(--card-accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <h2>Tesouraria</h2>
+        <p>Lançamentos mensais de extrato e caixinha</p>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Novo lançamento</h3>
+      <form id="formTesouraria">
+        <div class="form-row">
+          <div class="field">
+            <label for="t-data">Data</label>
+            <input type="date" id="t-data" required>
+          </div>
+          <div class="field">
+            <label for="t-competencia">Competência (mês a que se refere)</label>
+            <input type="month" id="t-competencia">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="t-extrato1015">Extrato <span class="code">1015</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="t-extrato1015">
+          </div>
+          <div class="field">
+            <label for="t-caixinha1000">Caixinha <span class="code">1000</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="t-caixinha1000">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="btnSalvarTesouraria">Salvar lançamento</button>
+          <span class="save-status" id="saveStatusTesouraria"></span>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel-box">
+      <div class="table-toolbar">
+        <h3 style="margin:0;">Lançamentos do mês</h3>
+        <div class="month-picker">
+          Mês:
+          <input type="month" id="filtroMesTesouraria">
+          <button type="button" class="link-btn" id="filtroMesTesouraria-limpar">todos os meses</button>
+        </div>
+      </div>
+      <div id="tableWrapTesouraria">
+        <div class="empty-state">Carregando lançamentos...</div>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Observação do setor (usada no Parecer)</h3>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
+        Escreve aqui o texto que vai aparecer no setor "Tesouraria" do Parecer do Conselho Fiscal, pra competência escolhida.
+      </p>
+      <form id="obsFormTesouraria">
+        <div class="form-row">
+          <div class="field">
+            <label for="t-obs-competencia">Competência</label>
+            <input type="month" id="t-obs-competencia" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <textarea id="t-obs-texto" placeholder="Observações da Tesouraria neste mês..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="t-obs-btn">Salvar observação</button>
+          <span class="save-status" id="t-obs-status"></span>
+        </div>
+      </form>
+      <div id="t-obs-lista" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: PIEDADE ===== -->
+  <div class="view" id="view-piedade">
+    <div class="back-link" data-back="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar ao painel
+    </div>
+
+    <div class="module-header">
+      <div class="card-icon" style="--card-accent:#2C7A5B; --card-accent-pale:#DFF0E8; background:var(--card-accent-pale); color:var(--card-accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+      </div>
+      <div>
+        <h2>Piedade</h2>
+        <p>Lançamentos mensais de caixinha e extrato</p>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Novo lançamento</h3>
+      <form id="formPiedade">
+        <div class="form-row">
+          <div class="field">
+            <label for="p-data">Data</label>
+            <input type="date" id="p-data" required>
+          </div>
+          <div class="field">
+            <label for="p-competencia">Competência (mês a que se refere)</label>
+            <input type="month" id="p-competencia">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="p-caixinha10010">Caixinha <span class="code">10010</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="p-caixinha10010">
+          </div>
+          <div class="field">
+            <label for="p-extrato10111">Extrato <span class="code">10.111</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="p-extrato10111">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="btnSalvarPiedade">Salvar lançamento</button>
+          <span class="save-status" id="saveStatusPiedade"></span>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel-box">
+      <div class="table-toolbar">
+        <h3 style="margin:0;">Lançamentos do mês</h3>
+        <div class="month-picker">
+          Mês:
+          <input type="month" id="filtroMesPiedade">
+          <button type="button" class="link-btn" id="filtroMesPiedade-limpar">todos os meses</button>
+        </div>
+      </div>
+      <div id="tableWrapPiedade">
+        <div class="empty-state">Carregando lançamentos...</div>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Observação do setor (usada no Parecer)</h3>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
+        Escreve aqui o texto que vai aparecer no setor "Piedade" do Parecer do Conselho Fiscal, pra competência escolhida.
+      </p>
+      <form id="obsFormPiedade">
+        <div class="form-row">
+          <div class="field">
+            <label for="p-obs-competencia">Competência</label>
+            <input type="month" id="p-obs-competencia" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <textarea id="p-obs-texto" placeholder="Observações da Piedade neste mês..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="p-obs-btn">Salvar observação</button>
+          <span class="save-status" id="p-obs-status"></span>
+        </div>
+      </form>
+      <div id="p-obs-lista" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: CONTABILIDADE ===== -->
+  <div class="view" id="view-contabilidade">
+    <div class="back-link" data-back="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar ao painel
+    </div>
+
+    <div class="module-header">
+      <div class="card-icon" style="--card-accent:#2C5F8A; --card-accent-pale:#DEEAF3; background:var(--card-accent-pale); color:var(--card-accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v3h6V3M8 11h8M8 15h5"/></svg>
+      </div>
+      <div>
+        <h2>Contabilidade</h2>
+        <p>Conferência mensal de lançamentos e saldos</p>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Novo lançamento</h3>
+      <form id="formContabilidade">
+        <div class="form-row">
+          <div class="field">
+            <label for="c-data">Data</label>
+            <input type="date" id="c-data" required>
+          </div>
+          <div class="field">
+            <label for="c-competencia">Competência (mês a que se refere)</label>
+            <input type="month" id="c-competencia">
+          </div>
+        </div>
+
+        <div class="section-divider">DOCUMENTOS PARA CONFERÊNCIA</div>
+        <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
+          Sobe os dois PDFs desse mês (primeiro o Balancete, depois a Posição Ativo). O sistema usa eles pra preencher a conferência abaixo sozinho.
+        </p>
+        <div class="form-row">
+          <div class="field">
+            <label for="c-pdf-balancete">Balancete (PDF)</label>
+            <input type="file" id="c-pdf-balancete" accept=".pdf">
+            <span class="save-status" id="statusPdfBalancete"></span>
+          </div>
+          <div class="field">
+            <label for="c-pdf-posicao">Posição Ativo (PDF)</label>
+            <input type="file" id="c-pdf-posicao" accept=".pdf">
+            <span class="save-status" id="statusPdfPosicao"></span>
+          </div>
+        </div>
+
+        <div class="section-divider">CONFERÊNCIA</div>
+        <div class="form-row">
+          <div class="field">
+            <label for="c-depositos2041">Depósitos não identificados <span class="code">2041</span></label>
+            <input type="number" step="0.01" placeholder="0,00" id="c-depositos2041">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="c-voluntarios308">Verificou lançamentos de mão de obra voluntária <span class="code">3080/3081</span></label>
+            <select id="c-voluntarios308">
+              <option value="">Selecione</option>
+              <option value="OK, teve lançamentos">OK, teve lançamentos</option>
+              <option value="Não teve lançamentos">Não teve lançamentos</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="c-ativoimobilizado110">Verificar lançamentos ativo imobilizado <span class="code">125.xx</span></label>
+            <select id="c-ativoimobilizado110">
+              <option value="">Selecione</option>
+              <option value="OK zerado">OK zerado</option>
+              <option value="Divergência">Divergência</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="c-saldosbalancete">Verificar saldos com Posição Ativo e Balancete</label>
+            <select id="c-saldosbalancete">
+              <option value="">Selecione</option>
+              <option value="OK contas conferidas">OK contas conferidas</option>
+              <option value="Pendente">Pendente</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="revisaoPosicaoAtivo" style="display:none; margin:10px 0 18px; padding:14px; border:1.5px solid var(--purple-pale, #ddd); border-radius:10px; background:#FAFAFC;">
+          <p style="font-size:13px; margin:0 0 10px; font-weight:600;">Conferência de saldos — Posição Ativo (lido por OCR) x Balancete</p>
+          <p style="font-size:12px; color:var(--ink-soft); margin:0 0 10px;">
+            A leitura da Posição Ativo é automática (OCR), pode vir com erro de dígito. Confira os valores abaixo — pode corrigir direto no campo antes de confirmar.
+          </p>
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="tabelaRevisaoSaldos">
+              <thead>
+                <tr>
+                  <th>Conta</th>
+                  <th>Descrição</th>
+                  <th class="num">Balancete</th>
+                  <th class="num">Posição Ativo — Valor Bens (OCR)</th>
+                  <th>Confere?</th>
+                </tr>
+              </thead>
+              <tbody id="corpoRevisaoSaldos"></tbody>
+            </table>
+          </div>
+          <div class="form-actions" style="margin-top:12px;">
+            <button type="button" class="btn-primary" id="btnConfirmarRevisaoSaldos">Confirmar conferência</button>
+            <span class="save-status" id="statusRevisaoSaldos"></span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="btnSalvarContabilidade">Salvar lançamento</button>
+          <span class="save-status" id="saveStatusContabilidade"></span>
+        </div>
+
+        <div class="form-actions" style="margin-top:8px;">
+          <button type="button" class="btn-primary" id="btnGerarBalancete">Gerar Balancete conferido (PDF)</button>
+          <span class="save-status" id="statusGerarBalancete"></span>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel-box">
+      <div class="table-toolbar">
+        <h3 style="margin:0;">Lançamentos do mês</h3>
+        <div class="month-picker">
+          Mês:
+          <input type="month" id="filtroMesContabilidade">
+          <button type="button" class="link-btn" id="filtroMesContabilidade-limpar">todos os meses</button>
+        </div>
+      </div>
+      <div id="tableWrapContabilidade">
+        <div class="empty-state">Carregando lançamentos...</div>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Observação do setor (usada no Parecer)</h3>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
+        Escreve aqui o texto que vai aparecer no setor "Contabilidade" do Parecer do Conselho Fiscal, pra competência escolhida.
+      </p>
+      <form id="obsFormContabilidade">
+        <div class="form-row">
+          <div class="field">
+            <label for="c-obs-competencia">Competência</label>
+            <input type="month" id="c-obs-competencia" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <textarea id="c-obs-texto" placeholder="Observações da Contabilidade neste mês..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="c-obs-btn">Salvar observação</button>
+          <span class="save-status" id="c-obs-status"></span>
+        </div>
+      </form>
+      <div id="c-obs-lista" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: SECRETARIA ===== -->
+  <div class="view" id="view-secretaria">
+    <div class="back-link" data-back="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar ao painel
+    </div>
+
+    <div class="module-header">
+      <div class="card-icon" style="--card-accent:#8A5A2C; --card-accent-pale:#F2E6D8; background:var(--card-accent-pale); color:var(--card-accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 13h6M9 17h6"/></svg>
+      </div>
+      <div>
+        <h2>Secretaria</h2>
+        <p>Observações do setor</p>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Observação do setor (usada no Parecer)</h3>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
+        Escreve aqui o texto que vai aparecer no setor "Secretaria" do Parecer do Conselho Fiscal, pra competência escolhida.
+      </p>
+      <form id="obsFormSecretaria">
+        <div class="form-row">
+          <div class="field">
+            <label for="s-obs-competencia">Competência</label>
+            <input type="month" id="s-obs-competencia" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <textarea id="s-obs-texto" placeholder="Observações da Secretaria neste mês..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="s-obs-btn">Salvar observação</button>
+          <span class="save-status" id="s-obs-status"></span>
+        </div>
+      </form>
+      <div id="s-obs-lista" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: PARECER ===== -->
+  <div class="view" id="view-parecer">
+    <div class="back-link" data-back="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar ao painel
+    </div>
+
+    <div class="module-header">
+      <div class="card-icon" style="--card-accent:#C79A3B; --card-accent-pale:#F5EBD3; background:var(--card-accent-pale); color:var(--card-accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 17h5"/></svg>
+      </div>
+      <div>
+        <h2>Parecer</h2>
+        <p>Parecer do Conselho Fiscal</p>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3>Novo parecer</h3>
+      <form id="formParecer">
+        <div class="form-row">
+          <div class="field">
+            <label for="pz-competencia">Competência (mês de referência)</label>
+            <input type="month" id="pz-competencia" required>
+          </div>
+          <div class="field">
+            <label for="pz-data">Data do parecer</label>
+            <input type="date" id="pz-data" required>
+          </div>
+          <div class="field">
+            <label for="pz-localidade">Localidade</label>
+            <input type="text" id="pz-localidade" value="ADM - ARTUR NOGUEIRA - SP">
+          </div>
+        </div>
+
+        <div class="section-divider">SETORES — OBSERVAÇÕES</div>
+        <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 10px;">
+          Esses textos vêm de cada aba (Tesouraria, Distribuidora, Contabilidade, Piedade, Secretaria) — escolha a Competência acima pra puxar automaticamente. Pra mudar o texto, edita na aba do setor.
+        </p>
+        <div class="form-row" style="margin-bottom:10px;">
+          <button type="button" class="link-btn" id="btnAtualizarSetores">↻ atualizar a partir dos setores</button>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <label for="pz-tesouraria">1. Tesouraria</label>
+            <textarea id="pz-tesouraria" readonly placeholder="Escolha a competência acima. Se vier vazio, lança o texto em Tesouraria › Observação do setor."></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <label for="pz-distribuidora">2. Distribuidora e Fundo Bíblico</label>
+            <textarea id="pz-distribuidora" readonly placeholder="Escolha a competência acima. Se vier vazio, lança o texto em Distribuidora › Observação do setor."></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <label for="pz-contabilidade">3. Contabilidade</label>
+            <textarea id="pz-contabilidade" readonly placeholder="Escolha a competência acima. Se vier vazio, lança o texto em Contabilidade › Observação do setor."></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <label for="pz-secretaria">4. Secretaria</label>
+            <textarea id="pz-secretaria" readonly placeholder="Escolha a competência acima. Se vier vazio, lança o texto em Secretaria › Observação do setor."></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
+            <label for="pz-piedade">5. Piedade</label>
+            <textarea id="pz-piedade" readonly placeholder="Escolha a competência acima. Se vier vazio, lança o texto em Piedade › Observação do setor."></textarea>
+          </div>
+        </div>
+
+        <div class="section-divider">ASSINATURAS DO CONSELHO</div>
+        <div class="form-row">
+          <div class="field">
+            <label for="pz-assin1">Assinatura 1</label>
+            <input type="text" id="pz-assin1" placeholder="Nome">
+          </div>
+          <div class="field">
+            <label for="pz-assin2">Assinatura 2</label>
+            <input type="text" id="pz-assin2" placeholder="Nome">
+          </div>
+          <div class="field">
+            <label for="pz-assin3">Assinatura 3</label>
+            <input type="text" id="pz-assin3" placeholder="Nome">
+          </div>
+          <div class="field">
+            <label for="pz-assin4">Assinatura 4</label>
+            <input type="text" id="pz-assin4" placeholder="Nome">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="btnSalvarParecer">Salvar parecer</button>
+          <span class="save-status" id="saveStatusParecer"></span>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel-box">
+      <h3 style="margin-bottom:14px;">Pareceres salvos</h3>
+      <div id="listaPareceres">
+        <div class="empty-state">Carregando pareceres...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: COMPRAS ===== -->
+  <div class="view" id="view-compras">
+    <div class="back-link" data-back="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar ao painel
+    </div>
+
+    <div class="module-header">
+      <div class="card-icon" style="--card-accent:#B5602C; --card-accent-pale:#F7E8DB; background:var(--card-accent-pale); color:var(--card-accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M6 2v20"/><path d="M12 10h4M12 14h4"/></svg>
+      </div>
+      <div>
+        <h2>Compras</h2>
+        <p>Parecer Conselho Fiscal — Compras</p>
+      </div>
+    </div>
+
+      <div class="panel-box">
+        <h3>Importar exportação do mês</h3>
+        <p style="font-size:12.5px; color:var(--ink-soft); margin:-8px 0 16px;">
+          Selecione o arquivo exportado direto do sistema (com a coluna de código e a data completa). Eu limpo tudo automaticamente — só falta você preencher as colunas de Cotações e Recebimento na tabela abaixo antes de salvar.
+        </p>
+        <div class="form-row">
+          <div class="field">
+            <label for="cp-competencia">Competência (mês de referência)</label>
+            <input type="month" id="cp-competencia" required>
+          </div>
+          <div class="field">
+            <label for="cp-data">Data do parecer</label>
+            <input type="date" id="cp-data" required>
+          </div>
+          <div class="field">
+            <label for="cp-localidade">Localidade</label>
+            <input type="text" id="cp-localidade" value="ADM - ARTUR NOGUEIRA - SP">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="cp-arquivo-cru">Arquivo exportado (.xlsx)</label>
+            <input type="file" id="cp-arquivo-cru" accept=".xlsx,.xls">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-primary" id="btnImportarCru">Importar e revisar</button>
+          <span class="save-status" id="importStatusCru"></span>
+        </div>
+      </div>
+
+      <div class="panel-box" id="revisaoComprasBox" style="display:none;">
+        <h3 style="margin-bottom:6px;">Revisar antes de salvar</h3>
+        <p style="font-size:12.5px; color:var(--ink-soft); margin:0 0 14px;">
+          Marca quantas cotações foram feitas em cada linha e se o recebimento está OK, depois clica em Salvar.
+        </p>
+        <div id="tabelaRevisaoCompras" style="overflow-x:auto;"></div>
+
+        <div class="section-divider">ASSINATURAS (OPCIONAL)</div>
+        <p style="font-size:12px; color:var(--ink-soft); margin:-6px 0 12px;">
+          Preenche só se quiser que apareçam na impressão. Deixa em branco pra não incluir.
+        </p>
+        <div class="form-row">
+          <div class="field">
+            <label for="cp-assin1">Assinatura 1</label>
+            <input type="text" id="cp-assin1" placeholder="Nome (opcional)">
+          </div>
+          <div class="field">
+            <label for="cp-assin2">Assinatura 2</label>
+            <input type="text" id="cp-assin2" placeholder="Nome (opcional)">
+          </div>
+          <div class="field">
+            <label for="cp-assin3">Assinatura 3</label>
+            <input type="text" id="cp-assin3" placeholder="Nome (opcional)">
+          </div>
+          <div class="field">
+            <label for="cp-assin4">Assinatura 4</label>
+            <input type="text" id="cp-assin4" placeholder="Nome (opcional)">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-primary" id="btnSalvarRevisaoCompras">Salvar parecer de compras</button>
+          <span class="save-status" id="saveStatusRevisaoCompras"></span>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <h3 style="margin-bottom:6px;">Importar planilha já pronta (vários meses de uma vez)</h3>
+        <p style="font-size:12.5px; color:var(--ink-soft); margin:-4px 0 16px;">
+          Se você já tem a planilha toda formatada à mão (com todas as colunas preenchidas), pode importar direto sem revisão.
+        </p>
+        <div class="form-row">
+          <div class="field">
+            <label for="cp-arquivo">Arquivo (.xlsx)</label>
+            <input type="file" id="cp-arquivo" accept=".xlsx,.xls">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-primary" id="btnImportarCompras">Importar planilha</button>
+          <span class="save-status" id="importStatusCompras"></span>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <h3 style="margin-bottom:14px;">Pareceres de compras salvos</h3>
+        <div id="listaComprasParecer">
+          <div class="empty-state">Carregando...</div>
+        </div>
+      </div>
+
+  </div>
+
+</main>
+
+<footer class="app-copyright">© RRM · 2026 · Sistema Conselho Fiscal</footer>
+
+<!-- Folha de impressão (oculta na tela, visível só ao imprimir) -->
+<div id="printSheet"></div>
+
+<script>
+  function pad(n){ return n.toString().padStart(2,'0'); }
+
+  function updateClock(){
+    const now = new Date();
+    const dias = ['dom','seg','ter','qua','qui','sex','sáb'];
+    const dataStr = `${dias[now.getDay()]}, ${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+    const horaStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    document.getElementById('clock').textContent = `${dataStr} · ${horaStr}`;
+    document.getElementById('stampDate').textContent = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ---------- NAVEGAÇÃO ENTRE TELAS ---------- */
+  const VIEWS_VALIDAS = ['painel', 'distribuidora', 'tesouraria', 'piedade', 'contabilidade', 'secretaria', 'parecer', 'compras'];
+
+  function switchView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target = document.getElementById('view-' + name);
+    if(target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(i=>{
+      i.classList.toggle('active', i.dataset.target === name);
+    });
+
+    if(MODULOS[name]) recarregarTabela(MODULOS[name]);
+    if(OBS_MODULOS[name]) recarregarObservacoes(OBS_MODULOS[name]);
+    if(name === 'parecer') carregarPareceres();
+    if(name === 'compras') carregarComprasParecer();
+  }
+
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      const target = item.dataset.target;
+      if(VIEWS_VALIDAS.includes(target)) switchView(target);
+    });
+  });
+
+  document.querySelectorAll('.card:not(.ghost)').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const target = card.dataset.view;
+      if(target) switchView(target);
+    });
+  });
+
+  document.querySelectorAll('[data-back="true"]').forEach(el=>{
+    el.addEventListener('click', ()=>switchView('painel'));
+  });
+
+  /* ---------- BANCO DE DADOS (Firebase: login + Firestore) ----------
+     Cada lançamento é um documento da coleção "scf_<chave>" (ex.: scf_distribuidora).
+     Os PDFs da Contabilidade ficam fora do lançamento, em pedaços na coleção "scf_pdfs",
+     porque o Firestore limita cada documento a ~1 MB. */
+  const PREFIXO_COLECAO = 'scf_';
+  const COLECAO_PDFS = 'scf_pdfs';
+  const TAMANHO_PEDACO_PDF = 700000; // caracteres de base64 por documento
+  const CAMPOS_PDF = [
+    { campo: 'pdfBalanceteBase64', tipo: 'balancete', flag: 'temPdfBalancete' },
+    { campo: 'pdfPosicaoBase64',   tipo: 'posicao',   flag: 'temPdfPosicao' },
+  ];
+
+  let fbDb = null;
+  let fbAuth = null;
+  let _resolverLogin;
+  const loginPronto = new Promise(resolve => { _resolverLogin = resolve; });
+  const cacheJsonPorChave = {}; // chave -> { id: json do documento como está no Firebase }
+
+  function firebaseConfigurado(){
+    const c = window.FIREBASE_CONFIG;
+    return !!(c && c.apiKey && c.projectId && !/COLE_AQUI/i.test(c.apiKey));
+  }
+
+  function jsonCanonico(v){
+    if (Array.isArray(v)) return '[' + v.map(jsonCanonico).join(',') + ']';
+    if (v && typeof v === 'object') {
+      return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + jsonCanonico(v[k])).join(',') + '}';
+    }
+    return JSON.stringify(v);
+  }
+
+  async function gravarPdfEmPedacos(entryId, tipo, base64){
+    const col = fbDb.collection(COLECAO_PDFS);
+    const total = Math.ceil(base64.length / TAMANHO_PEDACO_PDF);
+    for (let i = 0; i < total; i++) {
+      await col.doc(`${entryId}__${tipo}__${i}`).set({
+        entryId, tipo, ordem: i,
+        dados: base64.slice(i * TAMANHO_PEDACO_PDF, (i + 1) * TAMANHO_PEDACO_PDF)
+      });
+    }
+    // se o PDF novo é menor que o antigo, apaga os pedaços que sobraram
+    const antigos = await col.where('entryId', '==', entryId).where('tipo', '==', tipo).get();
+    for (const d of antigos.docs) {
+      if (d.data().ordem >= total) await d.ref.delete();
+    }
+  }
+
+  async function lerPdfBase64(entryId, tipo){
+    const snap = await fbDb.collection(COLECAO_PDFS).where('entryId', '==', entryId).where('tipo', '==', tipo).get();
+    return snap.docs.map(d => d.data()).sort((a, b) => a.ordem - b.ordem).map(x => x.dados).join('');
+  }
+
+  async function apagarPdfsDoLancamento(entryId){
+    const snap = await fbDb.collection(COLECAO_PDFS).where('entryId', '==', entryId).get();
+    for (const d of snap.docs) await d.ref.delete();
+  }
+
+  // Traz de volta os PDFs de um lançamento da Contabilidade (a lista vem sem eles pra ficar rápida)
+  async function hidratarPdfsContabilidade(registro){
+    for (const p of CAMPOS_PDF) {
+      if (registro[p.flag] && !registro[p.campo]) {
+        try {
+          registro[p.campo] = await lerPdfBase64(registro.id, p.tipo);
+        } catch (err) {
+          console.error('Erro ao carregar PDF salvo:', err);
+        }
+      }
+    }
+  }
+
+  async function getEntries(chave){
+    await loginPronto;
+    const snap = await fbDb.collection(PREFIXO_COLECAO + chave).get();
+    const lista = snap.docs.map(d => Object.assign({}, d.data(), { id: d.id }));
+    const cache = {};
+    lista.forEach(e => { cache[e.id] = jsonCanonico(e); });
+    cacheJsonPorChave[chave] = cache;
+
+    const campoOrdem = (chave.startsWith('obs') || chave.startsWith('parecer')) ? 'competencia' : 'data';
+    lista.sort((a, b) =>
+      String(a[campoOrdem] || '').localeCompare(String(b[campoOrdem] || '')) ||
+      String(a.id).localeCompare(String(b.id)));
+    return lista;
+  }
+
+  // Grava só o que mudou (quem edita lançamentos diferentes ao mesmo tempo não se atropela)
+  // e apaga o que saiu da lista.
+  async function saveEntries(chave, entries){
+    await loginPronto;
+    const col = fbDb.collection(PREFIXO_COLECAO + chave);
+    if (!cacheJsonPorChave[chave]) await getEntries(chave);
+    const cache = cacheJsonPorChave[chave];
+    const idsNovos = new Set();
+
+    for (const original of entries) {
+      const e = JSON.parse(JSON.stringify(original)); // tira campos undefined, que o Firestore recusa
+      if (!e.id) e.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      e.id = String(e.id);
+      idsNovos.add(e.id);
+
+      for (const p of CAMPOS_PDF) {
+        const base64 = e[p.campo];
+        if (typeof base64 === 'string' && base64.length) {
+          await gravarPdfEmPedacos(e.id, p.tipo, base64);
+          e[p.flag] = true;
+        }
+        delete e[p.campo];
+      }
+
+      const json = jsonCanonico(e);
+      if (cache[e.id] !== json) await col.doc(e.id).set(e);
+      cache[e.id] = json;
+    }
+
+    for (const id of Object.keys(cache)) {
+      if (!idsNovos.has(id)) {
+        await col.doc(id).delete();
+        await apagarPdfsDoLancamento(id);
+        delete cache[id];
+      }
+    }
+  }
+
+  /* ---------- LOGIN ---------- */
+  function mensagemErroLogin(err){
+    const c = (err && err.code) || '';
+    if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(c)) return 'E-mail ou senha incorretos.';
+    if (c === 'auth/too-many-requests') return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.';
+    if (c === 'auth/network-request-failed') return 'Sem conexão com a internet.';
+    if (c === 'auth/user-disabled') return 'Este usuário está desativado.';
+    return 'Não foi possível entrar. ' + ((err && err.message) || '');
+  }
+
+  function iniciarFirebase(){
+    const gate = document.getElementById('loginGate');
+    const aviso = document.getElementById('loginAviso');
+    const status = document.getElementById('loginStatus');
+
+    if (!window.firebase || !firebaseConfigurado()) {
+      aviso.textContent = !window.firebase
+        ? 'Não consegui carregar o Firebase. Confira a internet e recarregue a página.'
+        : 'Falta configurar o arquivo firebase-config.js com os dados do seu projeto Firebase.';
+      document.getElementById('btnEntrar').disabled = true;
+      document.getElementById('btnEsqueci').disabled = true;
+      return;
+    }
+
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    fbAuth = firebase.auth();
+    fbDb = firebase.firestore();
+
+    fbAuth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('userEmail').textContent = user.email || '';
+        gate.style.display = 'none';
+        _resolverLogin();
+      } else {
+        gate.style.display = 'flex';
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnEntrar');
+      btn.disabled = true;
+      status.textContent = 'Entrando...';
+      status.className = 'save-status';
+      try {
+        await fbAuth.signInWithEmailAndPassword(
+          document.getElementById('login-email').value.trim(),
+          document.getElementById('login-senha').value);
+        status.textContent = '';
+        document.getElementById('login-senha').value = '';
+      } catch (err) {
+        status.textContent = mensagemErroLogin(err);
+        status.className = 'save-status err';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('btnEsqueci').addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value.trim();
+      if (!email) {
+        status.textContent = 'Digite seu e-mail acima e clique de novo.';
+        status.className = 'save-status err';
+        return;
+      }
+      try {
+        await fbAuth.sendPasswordResetEmail(email);
+        status.textContent = 'Enviei um e-mail para você redefinir a senha.';
+        status.className = 'save-status ok';
+      } catch (err) {
+        status.textContent = mensagemErroLogin(err);
+        status.className = 'save-status err';
+      }
+    });
+
+    document.getElementById('btnSair').addEventListener('click', async () => {
+      try { await fbAuth.signOut(); } catch (err) { /* segue e recarrega mesmo assim */ }
+      location.reload();
+    });
+  }
+
+  /* ---------- IMPORTAR dados_scf.json (uma vez, ao migrar do computador) ---------- */
+  function ligarImportacaoJson(){
+    document.getElementById('btnImportarJson').addEventListener('click', async () => {
+      const input = document.getElementById('arquivo-importar-json');
+      const status = document.getElementById('statusImportarJson');
+      const btn = document.getElementById('btnImportarJson');
+      const file = input.files[0];
+      if (!file) {
+        status.textContent = 'Escolha o arquivo dados_scf.json primeiro.';
+        status.className = 'save-status err';
+        return;
+      }
+      let dados;
+      try {
+        dados = JSON.parse(await file.text());
+      } catch (err) {
+        status.textContent = 'Esse arquivo não é um dados_scf.json válido.';
+        status.className = 'save-status err';
+        return;
+      }
+      const chaves = Object.keys(dados).filter(k => Array.isArray(dados[k]) && /^[A-Za-z0-9_]+$/.test(k));
+      const total = chaves.reduce((n, k) => n + dados[k].length, 0);
+      if (!chaves.length || !total) {
+        status.textContent = 'Não encontrei lançamentos nesse arquivo.';
+        status.className = 'save-status err';
+        return;
+      }
+      if (!confirm(`Importar ${total} registro(s) de ${chaves.length} área(s) para o Firebase?`)) return;
+
+      btn.disabled = true;
+      try {
+        let i = 0;
+        for (const chave of chaves) {
+          i++;
+          status.textContent = `Importando ${chave} (${i} de ${chaves.length})...`;
+          status.className = 'save-status';
+          const atuais = await getEntries(chave);
+          const mapa = new Map(atuais.map(e => [e.id, e]));
+          dados[chave].forEach(e => {
+            if (!e) return;
+            if (!e.id) e.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            mapa.set(String(e.id), e);
+          });
+          await saveEntries(chave, Array.from(mapa.values()));
+        }
+        status.textContent = `Pronto: ${total} registro(s) importado(s).`;
+        status.className = 'save-status ok';
+        input.value = '';
+      } catch (err) {
+        console.error('Erro na importação:', err);
+        status.textContent = 'A importação parou: ' + (err && err.message ? err.message : 'erro desconhecido') + ' Pode tentar de novo, o que já entrou não duplica.';
+        status.className = 'save-status err';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  function formatMoeda(v){
+    const n = Number(v) || 0;
+    return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatDataBR(isoDate){
+    const [y,m,d] = isoDate.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function nomeMesPT(mesAAAAMM){
+    const nomes = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const [ano, mes] = mesAAAAMM.split('-').map(Number);
+    return `${nomes[mes-1]} de ${ano}`;
+  }
+
+  /* ---------- MOTOR GENÉRICO DE MÓDULO ----------
+     Cada módulo (Distribuidora, Tesouraria, ...) só precisa de uma
+     configuração descrevendo seus campos — o resto (salvar, listar,
+     somar por mês, excluir) é compartilhado. */
+  function registrarModulo(cfg){
+    const form = document.getElementById(cfg.formId);
+    cfg.editandoId = null;
+    const LABEL_SALVAR = 'Salvar lançamento';
+    const LABEL_ATUALIZAR = 'Salvar edição';
+
+    // Auto-preenche a Competência com o mês ANTERIOR à Data (padrão de uso: lança retroativo,
+    // ex: data em julho referente a fechamento de junho). Só preenche se estiver vazio,
+    // pra não sobrescrever se o usuário já mexeu manualmente.
+    if (cfg.competenciaFieldId) {
+      const dataEl = document.getElementById(cfg.dataFieldId);
+      const competEl = document.getElementById(cfg.competenciaFieldId);
+      dataEl.addEventListener('change', () => {
+        if (!dataEl.value || competEl.value) return;
+        const d = new Date(dataEl.value + 'T00:00:00');
+        if (isNaN(d)) return;
+        const mesAnterior = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+        competEl.value = `${mesAnterior.getFullYear()}-${pad(mesAnterior.getMonth() + 1)}`;
+      });
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const btn = document.getElementById(cfg.btnId);
+      const status = document.getElementById(cfg.statusId);
+
+      const data = document.getElementById(cfg.dataFieldId).value;
+      if(!data){
+        status.textContent = 'Preencha a data antes de salvar.';
+        status.className = 'save-status err';
+        return;
+      }
+
+      const editando = cfg.editandoId;
+      const registro = { id: editando || Date.now().toString(36), data: data };
+      if (cfg.competenciaFieldId) {
+        registro.competencia = document.getElementById(cfg.competenciaFieldId).value || '';
+      }
+      cfg.campos.forEach(c=>{
+        const valor = document.getElementById(c.id).value;
+        registro[c.key] = c.tipo === 'status' ? valor : (valor || 0);
+      });
+
+      btn.disabled = true;
+      status.textContent = editando ? 'Atualizando...' : 'Salvando...';
+      status.className = 'save-status';
+
+      if (cfg.antesDeSalvar) {
+        try { await cfg.antesDeSalvar(registro); } catch(err) { console.error('Erro em antesDeSalvar:', err); }
+      }
+
+      try{
+        let entries = await getEntries(cfg.chave);
+        if (editando) {
+          entries = entries.map(en => en.id === editando ? registro : en);
+        } else {
+          entries.push(registro);
+        }
+        entries.sort((a,b)=> a.data.localeCompare(b.data));
+        await saveEntries(cfg.chave, entries);
+
+        status.textContent = editando ? 'Lançamento atualizado com sucesso.' : 'Lançamento salvo com sucesso.';
+        status.className = 'save-status ok';
+        form.reset();
+        cfg.editandoId = null;
+        btn.textContent = LABEL_SALVAR;
+
+        if (cfg.aposSalvar) {
+          try { await cfg.aposSalvar(); } catch(e) { console.error('Erro em aposSalvar:', e); }
+        }
+
+        await recarregarTabela(cfg);
+
+        // desce até a lista e destaca a linha recém-salva por alguns segundos
+        const wrapEl = document.getElementById(cfg.tableWrapId);
+        if (wrapEl) {
+          wrapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const marcador = wrapEl.querySelector(`[data-id="${registro.id}"]`);
+          const linhaNova = marcador ? marcador.closest('tr') : null;
+          if (linhaNova) {
+            linhaNova.classList.add('linha-recente');
+            setTimeout(() => linhaNova.classList.remove('linha-recente'), 2500);
+          }
+        }
+      }catch(err){
+        status.textContent = 'Não foi possível salvar. Tente novamente.';
+        status.className = 'save-status err';
+      }finally{
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById(cfg.filtroMesId).addEventListener('change', ()=>recarregarTabela(cfg));
+
+    const btnLimparMes = document.getElementById(cfg.filtroMesId + '-limpar');
+    if (btnLimparMes) {
+      btnLimparMes.addEventListener('click', () => {
+        document.getElementById(cfg.filtroMesId).value = '';
+        recarregarTabela(cfg);
+      });
+    }
+
+    MODULOS[cfg.chave] = cfg;
+  }
+
+  const MODULOS = {};
+
+  /* ---------- OBSERVAÇÃO DO SETOR (texto usado no Parecer, um por competência) ---------- */
+  const OBS_MODULOS = {};
+
+  function registrarObservacaoSetor(cfg){
+    const form = document.getElementById(cfg.formId);
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const btn = document.getElementById(cfg.btnId);
+      const status = document.getElementById(cfg.statusId);
+      const competencia = document.getElementById(cfg.competenciaFieldId).value;
+      const texto = document.getElementById(cfg.textoFieldId).value;
+
+      if(!competencia){
+        status.textContent = 'Escolhe a competência antes de salvar.';
+        status.className = 'save-status err';
+        return;
+      }
+
+      btn.disabled = true;
+      status.textContent = 'Salvando...';
+      status.className = 'save-status';
+
+      try{
+        let entries = await getEntries(cfg.chave);
+        const idx = entries.findIndex(en => en.competencia === competencia);
+        const registro = { id: (idx >= 0 ? entries[idx].id : Date.now().toString(36)), competencia, texto };
+        if(idx >= 0) entries[idx] = registro; else entries.push(registro);
+        entries.sort((a,b)=> a.competencia.localeCompare(b.competencia));
+        await saveEntries(cfg.chave, entries);
+
+        status.textContent = 'Observação salva com sucesso.';
+        status.className = 'save-status ok';
+        form.reset();
+        await recarregarObservacoes(cfg);
+      }catch(err){
+        status.textContent = 'Não foi possível salvar. Tente novamente.';
+        status.className = 'save-status err';
+      }finally{
+        btn.disabled = false;
+      }
+    });
+
+    OBS_MODULOS[cfg.viewName] = cfg;
+  }
+
+  async function recarregarObservacoes(cfg){
+    const wrap = document.getElementById(cfg.listWrapId);
+    wrap.innerHTML = '<div class="empty-state">Carregando...</div>';
+
+    let entries = [];
+    try{
+      entries = await getEntries(cfg.chave);
+    }catch(err){
+      wrap.innerHTML = '<div class="empty-state">Não foi possível carregar.</div>';
+      return;
+    }
+
+    if(!entries.length){
+      wrap.innerHTML = '<div class="empty-state">Nenhuma observação lançada ainda.</div>';
+      return;
+    }
+
+    const ordenadas = [...entries].sort((a,b)=> b.competencia.localeCompare(a.competencia));
+    wrap.innerHTML = ordenadas.map(en => `
+      <div class="obs-item">
+        <div class="obs-item-header">
+          <strong>${nomeMesPT(en.competencia)}</strong>
+          <span><span class="edit" data-id="${en.id}">editar</span><span class="sep">·</span><span class="del" data-id="${en.id}">excluir</span></span>
+        </div>
+        <div class="obs-item-texto">${(en.texto || '').replace(/</g,'&lt;') || '<em>(vazio)</em>'}</div>
+      </div>
+    `).join('');
+
+    wrap.querySelectorAll('.edit').forEach(el=>{
+      el.addEventListener('click', async ()=>{
+        const all = await getEntries(cfg.chave);
+        const registro = all.find(en => en.id === el.dataset.id);
+        if(!registro) return;
+        document.getElementById(cfg.competenciaFieldId).value = registro.competencia;
+        document.getElementById(cfg.textoFieldId).value = registro.texto || '';
+        document.getElementById(cfg.formId).scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+    });
+    wrap.querySelectorAll('.del').forEach(el=>{
+      el.addEventListener('click', async ()=>{
+        if(!confirm('Excluir essa observação?')) return;
+        let all = await getEntries(cfg.chave);
+        all = all.filter(en => en.id !== el.dataset.id);
+        await saveEntries(cfg.chave, all);
+        recarregarObservacoes(cfg);
+      });
+    });
+  }
+
+
+
+  async function recarregarTabela(cfg){
+    const wrap = document.getElementById(cfg.tableWrapId);
+    const filtroMesInput = document.getElementById(cfg.filtroMesId);
+
+    wrap.innerHTML = '<div class="empty-state">Carregando lançamentos...</div>';
+
+    let entries = [];
+    try{
+      entries = await getEntries(cfg.chave);
+    }catch(err){
+      wrap.innerHTML = '<div class="empty-state">Não foi possível carregar os lançamentos.</div>';
+      return;
+    }
+
+    if (!entries.length) {
+      wrap.innerHTML = '<div class="empty-state">Nenhum lançamento ainda. Use o formulário acima para começar.</div>';
+      return;
+    }
+
+    function mesCompetencia(e){
+      return e.competencia || (e.data ? e.data.slice(0,7) : '');
+    }
+
+    const mesFiltro = filtroMesInput.value;
+    let meses;
+    if (mesFiltro) {
+      meses = [mesFiltro];
+    } else {
+      meses = Array.from(new Set(entries.map(mesCompetencia).filter(Boolean)));
+      meses.sort((a,b) => b.localeCompare(a)); // mais recente primeiro
+    }
+
+    function renderCelula(c, valor, totais){
+      if(c.tipo === 'status'){
+        const v = valor || '';
+        const cls = v.startsWith('OK') ? 'ok' : (v === '' ? 'vazio' : 'pendente');
+        return `<td><span class="status-badge ${cls}">${v || '—'}</span></td>`;
+      }
+      totais[c.key] += Number(valor) || 0;
+      return `<td class="num">${formatMoeda(valor)}</td>`;
+    }
+
+    function montarTabela(doMes){
+      const totais = {};
+      cfg.campos.forEach(c => { if(c.tipo !== 'status') totais[c.key] = 0; });
+
+      const linhas = doMes.map(e=>{
+        let celulas = `<td>${formatDataBR(e.data)}</td><td>${e.competencia ? formatCompetenciaBR(e.competencia) : '—'}</td>`;
+        cfg.campos.forEach(c=>{
+          celulas += renderCelula(c, e[c.key], totais);
+        });
+        celulas += `<td class="acoes"><span class="edit" data-id="${e.id}">editar</span><span class="sep">·</span><span class="del" data-id="${e.id}">excluir</span></td>`;
+        return `<tr>${celulas}</tr>`;
+      }).join('');
+
+      const headCols = cfg.campos.map(c=>`<th${c.tipo === 'status' ? '' : ' class="num"'}>${c.label}</th>`).join('');
+      const totalCols = cfg.campos.map(c=> c.tipo === 'status' ? '<td></td>' : `<td class="num">${formatMoeda(totais[c.key])}</td>`).join('');
+
+      return `
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Competência</th>
+            ${headCols}
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td></td>
+            ${totalCols}
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>`;
+    }
+
+    let html = '';
+    meses.forEach(mes => {
+      const doMes = entries.filter(e => mesCompetencia(e) === mes).sort((a,b)=> a.data.localeCompare(b.data));
+      if (!doMes.length) return;
+      const titulo = mesFiltro ? '' : `<div class="mes-titulo">${nomeMesPT(mes)}</div>`;
+      html += `<div class="mes-bloco">${titulo}${montarTabela(doMes)}</div>`;
+    });
+
+    if (!html) {
+      wrap.innerHTML = '<div class="empty-state">Nenhum lançamento neste mês ainda.</div>';
+      return;
+    }
+
+    wrap.innerHTML = html;
+
+    wrap.querySelectorAll('.edit').forEach(cell=>{
+      cell.addEventListener('click', async ()=>{
+        const all = await getEntries(cfg.chave);
+        const registro = all.find(en => en.id === cell.dataset.id);
+        if (!registro) return;
+
+        document.getElementById(cfg.dataFieldId).value = registro.data;
+        if (cfg.competenciaFieldId) {
+          document.getElementById(cfg.competenciaFieldId).value = registro.competencia || '';
+        }
+        cfg.campos.forEach(c=>{
+          const el = document.getElementById(c.id);
+          if (el) el.value = (registro[c.key] != null ? registro[c.key] : '');
+        });
+
+        cfg.editandoId = registro.id;
+        const btn = document.getElementById(cfg.btnId);
+        btn.textContent = 'Salvar edição';
+        const status = document.getElementById(cfg.statusId);
+        status.textContent = `Editando lançamento de ${formatDataBR(registro.data)} — altere os campos e clique em "Salvar edição".`;
+        status.className = 'save-status';
+
+        if (cfg.aoEditar) {
+          try { await cfg.aoEditar(registro); } catch(err) { console.error('Erro em aoEditar:', err); }
+        }
+
+        document.getElementById(cfg.formId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    wrap.querySelectorAll('.del').forEach(cell=>{
+      cell.addEventListener('click', async ()=>{
+        if(!confirm('Excluir este lançamento?')) return;
+        let all = await getEntries(cfg.chave);
+        all = all.filter(e => e.id !== cell.dataset.id);
+        await saveEntries(cfg.chave, all);
+        if (cfg.editandoId === cell.dataset.id) {
+          cfg.editandoId = null;
+          const btn = document.getElementById(cfg.btnId);
+          btn.textContent = 'Salvar lançamento';
+          document.getElementById(cfg.formId).reset();
+        }
+        recarregarTabela(cfg);
+      });
+    });
+  }
+
+  /* ---------- CONFIGURAÇÃO DOS MÓDULOS ---------- */
+  registrarModulo({
+    chave: 'distribuidora',
+    formId: 'formDistribuidora',
+    dataFieldId: 'd-data',
+    competenciaFieldId: 'd-competencia',
+    btnId: 'btnSalvarDistribuidora',
+    statusId: 'saveStatusDistribuidora',
+    tableWrapId: 'tableWrapDistribuidora',
+    filtroMesId: 'filtroMesDistribuidora',
+    campos: [
+      { id: 'd-estoque1050',      key: 'estoque1050',      label: 'Estoque 1050' },
+      { id: 'd-caixinha10040',    key: 'caixinha10040',    label: 'Caixinha 10040' },
+      { id: 'd-estoque1053',      key: 'estoque1053',      label: 'Estoque 1053' },
+      { id: 'd-caixinha10050',    key: 'caixinha10050',    label: 'Caixinha 10050' },
+      { id: 'd-saldo10140',       key: 'saldo10140',       label: 'Saldo 10140' },
+      { id: 'd-aplicacao10340',   key: 'aplicacao10340',   label: 'Aplicação 10340' },
+    ]
+  });
+
+  registrarModulo({
+    chave: 'tesouraria',
+    formId: 'formTesouraria',
+    dataFieldId: 't-data',
+    competenciaFieldId: 't-competencia',
+    btnId: 'btnSalvarTesouraria',
+    statusId: 'saveStatusTesouraria',
+    tableWrapId: 'tableWrapTesouraria',
+    filtroMesId: 'filtroMesTesouraria',
+    campos: [
+      { id: 't-extrato1015',   key: 'extrato1015',   label: 'Extrato 1015' },
+      { id: 't-caixinha1000',  key: 'caixinha1000',  label: 'Caixinha 1000' },
+    ]
+  });
+
+  registrarModulo({
+    chave: 'piedade',
+    formId: 'formPiedade',
+    dataFieldId: 'p-data',
+    competenciaFieldId: 'p-competencia',
+    btnId: 'btnSalvarPiedade',
+    statusId: 'saveStatusPiedade',
+    tableWrapId: 'tableWrapPiedade',
+    filtroMesId: 'filtroMesPiedade',
+    campos: [
+      { id: 'p-caixinha10010',  key: 'caixinha10010',  label: 'Caixinha 10010' },
+      { id: 'p-extrato10111',   key: 'extrato10111',   label: 'Extrato 10.111' },
+    ]
+  });
+
+  registrarModulo({
+    chave: 'contabilidade',
+    formId: 'formContabilidade',
+    dataFieldId: 'c-data',
+    competenciaFieldId: 'c-competencia',
+    btnId: 'btnSalvarContabilidade',
+    statusId: 'saveStatusContabilidade',
+    tableWrapId: 'tableWrapContabilidade',
+    filtroMesId: 'filtroMesContabilidade',
+    campos: [
+      { id: 'c-depositos2041',        key: 'depositos2041',        label: 'Depósitos não identificados 2041' },
+      { id: 'c-voluntarios308',       key: 'voluntarios308',       label: 'Mão de obra voluntária 3080/3081', tipo: 'status' },
+      { id: 'c-ativoimobilizado110',  key: 'ativoimobilizado110',  label: 'Ativo imobilizado 125.xx', tipo: 'status' },
+      { id: 'c-saldosbalancete',      key: 'saldosbalancete',      label: 'Saldos x Balancete', tipo: 'status' },
+    ],
+    // guarda os PDFs (Balancete/Posição Ativo) em base64 junto com o lançamento, pra poder baixar depois
+    antesDeSalvar: async (registro) => {
+      if (ultimoArquivoBalancete) {
+        registro.pdfBalanceteBase64 = await fileParaBase64(ultimoArquivoBalancete);
+        registro.pdfBalanceteNome = ultimoArquivoBalancete.name;
+      }
+      if (ultimoArquivoPosicaoAtivo) {
+        registro.pdfPosicaoBase64 = await fileParaBase64(ultimoArquivoPosicaoAtivo);
+        registro.pdfPosicaoNome = ultimoArquivoPosicaoAtivo.name;
+      }
+    },
+    // ao editar, restaura os PDFs salvos: mostra link de baixar e reprocessa o Balancete (pra "Gerar Balancete conferido" continuar funcionando sem precisar re-subir)
+    aoEditar: async (registro) => {
+      await hidratarPdfsContabilidade(registro);
+      const statusBal = document.getElementById('statusPdfBalancete');
+      const statusPos = document.getElementById('statusPdfPosicao');
+
+      if (registro.pdfBalanceteBase64) {
+        const blob = base64ParaBlob(registro.pdfBalanceteBase64, 'application/pdf');
+        const nome = registro.pdfBalanceteNome || 'Balancete.pdf';
+        ultimoArquivoBalancete = new File([blob], nome, { type: 'application/pdf' });
+        let totalContasReprocessadas = 0;
+        let erroReprocessamento = null;
+        try {
+          const linhas = await extrairLinhasPdf(ultimoArquivoBalancete);
+          ultimoMapaBalancete = parseBalancete(linhas);
+          totalContasReprocessadas = Object.keys(ultimoMapaBalancete).length;
+          const { periodo, posLocalidade } = extrairPeriodoELocalidade(linhas);
+          ultimoPeriodoBalancete = periodo;
+          ultimaLinhaLocalidadeBalancete = posLocalidade;
+          autoPreencherConferenciaBalancete(ultimoMapaBalancete);
+        } catch(err) {
+          console.error('Erro ao reprocessar Balancete salvo:', err);
+          erroReprocessamento = err;
+          ultimoMapaBalancete = null;
+        }
+        const linkBaixar = `<a href="${URL.createObjectURL(blob)}" download="${nome}">baixar</a>`;
+        if (erroReprocessamento) {
+          statusBal.innerHTML = `⚠ ${nome} (salvo) — ${linkBaixar} · não consegui reler automaticamente, clica em "reprocessar" abaixo · <button type="button" class="link-btn" id="btnReprocessarBalancete">reprocessar</button>`;
+          statusBal.className = 'save-status err';
+        } else if (totalContasReprocessadas === 0) {
+          statusBal.innerHTML = `⚠ ${nome} (salvo) — ${linkBaixar} · reli mas não reconheci nenhuma conta · <button type="button" class="link-btn" id="btnReprocessarBalancete">tentar de novo</button>`;
+          statusBal.className = 'save-status err';
+        } else {
+          statusBal.innerHTML = `✓ ${nome} (salvo) — ${totalContasReprocessadas} contas reconhecidas — ${linkBaixar}`;
+          statusBal.className = 'save-status ok';
+        }
+        const btnReprocessarBal = document.getElementById('btnReprocessarBalancete');
+        if (btnReprocessarBal) {
+          btnReprocessarBal.addEventListener('click', async () => {
+            const linhas = await extrairLinhasPdf(ultimoArquivoBalancete);
+            ultimoMapaBalancete = parseBalancete(linhas);
+            const { periodo, posLocalidade } = extrairPeriodoELocalidade(linhas);
+            ultimoPeriodoBalancete = periodo;
+            ultimaLinhaLocalidadeBalancete = posLocalidade;
+            autoPreencherConferenciaBalancete(ultimoMapaBalancete);
+            const n = Object.keys(ultimoMapaBalancete).length;
+            statusBal.innerHTML = n > 0
+              ? `✓ ${nome} (salvo) — ${n} contas reconhecidas — ${linkBaixar}`
+              : `⚠ ${nome} (salvo) — ainda não reconheci nenhuma conta — ${linkBaixar}`;
+            statusBal.className = n > 0 ? 'save-status ok' : 'save-status err';
+          });
+        }
+      } else {
+        statusBal.textContent = '';
+        statusBal.className = 'save-status';
+      }
+
+      if (registro.pdfPosicaoBase64) {
+        const blob = base64ParaBlob(registro.pdfPosicaoBase64, 'application/pdf');
+        const nome = registro.pdfPosicaoNome || 'PosicaoAtivo.pdf';
+        ultimoArquivoPosicaoAtivo = new File([blob], nome, { type: 'application/pdf' });
+        statusPos.innerHTML = `✓ ${nome} (salvo) — <a href="${URL.createObjectURL(blob)}" download="${nome}">baixar</a> · <button type="button" class="link-btn" id="btnReprocessarPosicao">reprocessar (refazer OCR)</button>`;
+        statusPos.className = 'save-status ok';
+        const btnReprocessar = document.getElementById('btnReprocessarPosicao');
+        if (btnReprocessar) {
+          btnReprocessar.addEventListener('click', () => processarPosicaoAtivo(ultimoArquivoPosicaoAtivo));
+        }
+      } else {
+        statusPos.textContent = '';
+        statusPos.className = 'save-status';
+      }
+    },
+    // depois de salvar, limpa de vez o painel de PDFs e a tabela de conferência (não são campos nativos do form, então precisam de limpeza manual)
+    aposSalvar: () => {
+      ultimoArquivoBalancete = null;
+      ultimoArquivoPosicaoAtivo = null;
+      ultimoMapaBalancete = null;
+      ultimoPeriodoBalancete = null;
+
+      const statusBal = document.getElementById('statusPdfBalancete');
+      const statusPos = document.getElementById('statusPdfPosicao');
+      if (statusBal) { statusBal.textContent = ''; statusBal.className = 'save-status'; }
+      if (statusPos) { statusPos.textContent = ''; statusPos.className = 'save-status'; }
+
+      const areaRevisao = document.getElementById('revisaoPosicaoAtivo');
+      if (areaRevisao) areaRevisao.style.display = 'none';
+      const corpo = document.getElementById('corpoRevisaoSaldos');
+      if (corpo) corpo.innerHTML = '';
+      const statusRevisao = document.getElementById('statusRevisaoSaldos');
+      if (statusRevisao) { statusRevisao.textContent = ''; statusRevisao.className = 'save-status'; }
+      const statusGerar = document.getElementById('statusGerarBalancete');
+      if (statusGerar) { statusGerar.textContent = ''; statusGerar.className = 'save-status'; }
+    }
+  });
+
+  /* ---------- OBSERVAÇÃO DO SETOR (pro Parecer) ---------- */
+  registrarObservacaoSetor({
+    chave: 'obsDistribuidora', viewName: 'distribuidora',
+    formId: 'obsFormDistribuidora', competenciaFieldId: 'd-obs-competencia',
+    textoFieldId: 'd-obs-texto', btnId: 'd-obs-btn', statusId: 'd-obs-status', listWrapId: 'd-obs-lista'
+  });
+  registrarObservacaoSetor({
+    chave: 'obsTesouraria', viewName: 'tesouraria',
+    formId: 'obsFormTesouraria', competenciaFieldId: 't-obs-competencia',
+    textoFieldId: 't-obs-texto', btnId: 't-obs-btn', statusId: 't-obs-status', listWrapId: 't-obs-lista'
+  });
+  registrarObservacaoSetor({
+    chave: 'obsPiedade', viewName: 'piedade',
+    formId: 'obsFormPiedade', competenciaFieldId: 'p-obs-competencia',
+    textoFieldId: 'p-obs-texto', btnId: 'p-obs-btn', statusId: 'p-obs-status', listWrapId: 'p-obs-lista'
+  });
+  registrarObservacaoSetor({
+    chave: 'obsContabilidade', viewName: 'contabilidade',
+    formId: 'obsFormContabilidade', competenciaFieldId: 'c-obs-competencia',
+    textoFieldId: 'c-obs-texto', btnId: 'c-obs-btn', statusId: 'c-obs-status', listWrapId: 'c-obs-lista'
+  });
+  registrarObservacaoSetor({
+    chave: 'obsSecretaria', viewName: 'secretaria',
+    formId: 'obsFormSecretaria', competenciaFieldId: 's-obs-competencia',
+    textoFieldId: 's-obs-texto', btnId: 's-obs-btn', statusId: 's-obs-status', listWrapId: 's-obs-lista'
+  });
+
+  /* ---------- UPLOAD DOS PDFS DE CONFERÊNCIA (Posição Ativo / Balancete) ---------- */
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  // Lê um PDF com texto real (ex: Balancete) e devolve as linhas reconstruídas COM posição (pra depois desenhar "OK" em cima)
+  async function extrairLinhasPdf(file) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const linhas = [];
+    const TOLERANCIA_Y = 2.5; // pontos PDF — junta itens na mesma linha visual mesmo com pequena variação de y
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      const itens = content.items
+        .filter(it => it.str && it.str.trim() !== '')
+        .map(it => ({ x: it.transform[4], y: it.transform[5], str: it.str, largura: it.width || 0, tam: Math.abs(it.transform[0]) || 8 }))
+        .sort((a, b) => (b.y - a.y) || (a.x - b.x));
+
+      const fecharLinha = (grupo) => {
+        if (!grupo.length) return;
+        grupo.sort((a, b) => a.x - b.x);
+        linhas.push({
+          pagina: p,
+          y: grupo[0].y,
+          xInicio: grupo[0].x,
+          xFim: Math.max(...grupo.map(i => i.x + i.largura)),
+          texto: grupo.map(i => i.str).join(' '),
+          tokens: grupo.map(i => ({ x: i.x, str: i.str, tam: i.tam }))
+        });
+      };
+
+      let grupoAtual = [];
+      let yRef = null;
+      itens.forEach(it => {
+        if (yRef === null || Math.abs(it.y - yRef) <= TOLERANCIA_Y) {
+          grupoAtual.push(it);
+          yRef = it.y; // atualiza referência pra acompanhar pequenas derivas ao longo da linha
+        } else {
+          fecharLinha(grupoAtual);
+          grupoAtual = [it];
+          yRef = it.y;
+        }
+      });
+      fecharLinha(grupoAtual);
+    }
+    return linhas;
+  }
+
+  function parseValorBR(s) {
+    if (!s || s.trim() === '-') return 0;
+    return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+
+  // Parseia as linhas do Balancete Auxiliar em um mapa { "1.2.5.06": {descricao, debito, credito, saldo, saldoDC, codRed, pagina, y, xFim}, ... }
+  function parseBalancete(linhas) {
+    const re = /^\s*(\d[\d.]*)\s+(?:(\d+)\s+)?(.+?)\s+([\d.,]+|-)\s+([DC])\s+([\d.,]+|-)\s+([\d.,]+|-)\s+([\d.,]+|-)\s+([DC])\s*$/;
+    const mapa = {};
+    linhas.forEach(obj => {
+      const m = obj.texto.match(re);
+      if (!m) return;
+      const [, conta, codRed, desc, saldoAnt, dcAnt, debito, credito, saldo, dc] = m;
+      mapa[conta] = {
+        codRed: codRed || null,
+        descricao: desc.trim(),
+        saldoAnterior: parseValorBR(saldoAnt),
+        saldoAnteriorDC: dcAnt,
+        debito: parseValorBR(debito),
+        credito: parseValorBR(credito),
+        saldo: parseValorBR(saldo),
+        saldoDC: dc,
+        pagina: obj.pagina,
+        y: obj.y,
+        xInicio: obj.xInicio,
+        xFim: obj.xFim,
+        tokens: obj.tokens
+      };
+    });
+    return mapa;
+  }
+
+  // Contas de despesa "MÃO DE OBRA VOLUNTÁRIA" (Cód.Red 3080 e 3081) no Balancete Auxiliar da CCB
+  const CODRED_VOLUNTARIOS = ['3080', '3081'];
+
+  // Preenche sozinho "Depósitos não identificados" e "Mão de obra voluntária" a partir do mapa do Balancete —
+  // chamado tanto no upload novo quanto no reprocessamento (edição/botão reprocessar)
+  function autoPreencherConferenciaBalancete(mapa){
+    const contaDepositos = acharContaPorCodRed(mapa, '2041');
+    const rowDepositos = contaDepositos ? mapa[contaDepositos] : null;
+    document.getElementById('c-depositos2041').value = rowDepositos ? rowDepositos.saldo.toFixed(2) : '0.00';
+
+    const teveLancamentoVoluntarios = CODRED_VOLUNTARIOS.some(codRed => {
+      const contaKey = acharContaPorCodRed(mapa, codRed);
+      const row = contaKey ? mapa[contaKey] : null;
+      return row && (row.debito > 0 || row.credito > 0);
+    });
+    document.getElementById('c-voluntarios308').value = teveLancamentoVoluntarios ? 'OK, teve lançamentos' : 'Não teve lançamentos';
+  }
+
+  let ultimoMapaBalancete = null;
+  let ultimoArquivoBalancete = null;
+  let ultimoArquivoPosicaoAtivo = null;
+  let ultimoPeriodoBalancete = null; // { inicio: Date, fim: Date }
+  let ultimaLinhaLocalidadeBalancete = null; // { pagina, y, xFim } — usado pra escrever "Referente a [mês]" no cabeçalho
+
+  function fileParaBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function base64ParaBlob(base64, mime) {
+    const bin = atob(base64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  // Contas do ativo imobilizado que aparecem tanto no Balancete (Cód.Red) quanto na Posição Ativo
+  const CONTAS_ATIVO_IMOBILIZADO = [
+    { codRed: '1108', descricao: 'Terrenos', chave: 'TERRENOS' },
+    { codRed: '1100', descricao: 'Imóveis/Edificações', chave: 'EDIFICA' },
+    { codRed: '1101', descricao: 'Móveis e Utensílios', chave: 'MOVEIS' },
+    { codRed: '1102', descricao: 'Órgãos e Instrumentos', chave: 'ORGAOS' },
+    { codRed: '1103', descricao: 'Máquinas e Ferramentas', chave: 'MAQUINAS' },
+    { codRed: '1105', descricao: 'Equipamentos de Informática', chave: 'INFORMATICA' },
+    { codRed: '1106', descricao: 'Instalações', chave: 'INSTALA' },
+    { codRed: '1104', descricao: 'Sistemas Fotovoltaicos', chave: 'FOTOV' },
+    { codRed: '1109', descricao: 'Benfeitorias em Imóveis de Terceiros', chave: 'BENFEITORIAS' },
+  ];
+
+  function normalizarTexto(s) {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  }
+
+  // Rasteriza todas as páginas de um PDF em canvases (pra OCR)
+  async function rasterizarPdf(file, scale) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const canvases = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      canvases.push(canvas);
+    }
+    return canvases;
+  }
+
+  // OCR de uma lista de canvases, devolve o texto de todas as páginas concatenado
+  async function ocrCanvases(canvases, onProgress) {
+    const worker = await Tesseract.createWorker('por', 1, {
+      logger: onProgress ? (m) => onProgress(m) : undefined
+    });
+    let textoTotal = '';
+    for (const canvas of canvases) {
+      const { data } = await worker.recognize(canvas);
+      textoTotal += '\n' + data.text;
+    }
+    await worker.terminate();
+    return textoTotal;
+  }
+
+  // Busca, pra cada conta conhecida, o valor em formato monetário na coluna "Valor Bens" (a que bate com o Saldo do Balancete —
+  // "Valor Atual" da Posição Ativo já vem líquido de depreciação, não serve pra essa comparação).
+  // Tenta primeiro pelo código; se o OCR errou o código, tenta pela descrição da conta.
+  function parsePosicaoAtivoOCR(texto) {
+    const resultado = {};
+    const linhas = texto.split('\n');
+    const linhasNorm = linhas.map(normalizarTexto);
+    CONTAS_ATIVO_IMOBILIZADO.forEach(({ codRed, chave }) => {
+      for (const linha of linhas) {
+        const re = new RegExp('(^|\\s)' + codRed + '(\\s|\\||$)');
+        if (re.test(linha)) {
+          const valores = linha.match(/[\d]{1,3}(?:\.\d{3})*,\d{2}/g);
+          if (valores && valores.length) { resultado[codRed] = valores[0]; return; }
+        }
+      }
+      for (let i = 0; i < linhas.length; i++) {
+        if (linhasNorm[i].includes(chave)) {
+          const valores = linhas[i].match(/[\d]{1,3}(?:\.\d{3})*,\d{2}/g);
+          if (valores && valores.length) { resultado[codRed] = valores[0]; return; }
+        }
+      }
+    });
+    return resultado;
+  }
+
+  function montarLinhaRevisao(codRed, descricao, valorBalancete, valorOcr) {
+    const tr = document.createElement('tr');
+    const valorBalanceteFmt = valorBalancete != null
+      ? valorBalancete.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+      : '—';
+    tr.innerHTML = `
+      <td>${codRed}</td>
+      <td>${descricao}</td>
+      <td class="num">${valorBalanceteFmt}</td>
+      <td class="num"><input type="text" class="input-ocr-valor" data-codred="${codRed}" data-balancete="${valorBalancete != null ? valorBalancete : ''}" value="${valorOcr || ''}" style="width:110px; text-align:right; font-family:'IBM Plex Mono',monospace;"></td>
+      <td class="conf-status" data-codred="${codRed}">—</td>
+    `;
+    return tr;
+  }
+
+  function atualizarConfereLinha(tr) {
+    const input = tr.querySelector('.input-ocr-valor');
+    const valorBalancete = parseFloat(input.dataset.balancete);
+    const valorOcr = parseValorBR(input.value);
+    const statusCell = tr.querySelector('.conf-status');
+    if (!input.value.trim()) { statusCell.textContent = '—'; statusCell.style.color = ''; return false; }
+    const bate = Math.abs(valorBalancete - valorOcr) < 0.01;
+    statusCell.textContent = bate ? '✓ confere' : '✗ diferente';
+    statusCell.style.color = bate ? 'var(--ok-color, #2E7D32)' : '#C62828';
+    return bate;
+  }
+
+  function confirmarRevisaoSaldos(mostrarMensagem) {
+    const linhas = Array.from(document.querySelectorAll('#corpoRevisaoSaldos tr'));
+    const statusEl = document.getElementById('statusRevisaoSaldos');
+    if (!linhas.length) return;
+    const semPreencher = linhas.filter(tr => !tr.querySelector('.input-ocr-valor').value.trim());
+    if (semPreencher.length) {
+      if (mostrarMensagem) {
+        statusEl.textContent = 'Preenche ou corrige todos os valores antes de confirmar.';
+        statusEl.className = 'save-status';
+      }
+      return;
+    }
+    const todasConferem = linhas.every(tr => atualizarConfereLinha(tr));
+    document.getElementById('c-saldosbalancete').value = todasConferem ? 'OK contas conferidas' : 'Pendente';
+    statusEl.textContent = todasConferem ? '✓ Conferência confirmada — todas as contas batem' : 'Confirmado — há divergências, ficou como Pendente';
+    statusEl.className = todasConferem ? 'save-status ok' : 'save-status';
+  }
+
+  // Procura a tabela "DIFERENÇA: ATIVO IMOBILIZADO - CONTABILIDADE" dentro do texto OCR da Posição Ativo
+  // e confere se todas as contas conhecidas aparecem zeradas (0,00) nela.
+  function checarDiferencaZerada(textoOcr) {
+    const idx = textoOcr.search(/DIFEREN[ÇC]A/i);
+    const trecho = idx >= 0 ? textoOcr.slice(idx) : '';
+    if (!trecho) return { status: 'indeterminado', encontradas: 0 };
+
+    const linhas = trecho.split('\n');
+    const linhasNorm = linhas.map(normalizarTexto);
+    let encontradas = 0;
+    let algumaDiferente = false;
+    CONTAS_ATIVO_IMOBILIZADO.forEach(({ codRed, chave }) => {
+      let linhaAlvo = null;
+      for (const linha of linhas) {
+        const re = new RegExp('(^|\\s)' + codRed + '(\\s|\\||$)');
+        if (re.test(linha)) { linhaAlvo = linha; break; }
+      }
+      if (!linhaAlvo) {
+        const i = linhasNorm.findIndex(l => l.includes(chave));
+        if (i >= 0) linhaAlvo = linhas[i];
+      }
+      if (linhaAlvo) {
+        const valores = linhaAlvo.match(/[\d]{1,3}(?:\.\d{3})*,\d{2}/g);
+        if (valores && valores.length) {
+          encontradas++;
+          if (parseValorBR(valores[0]) !== 0) algumaDiferente = true;
+        }
+      }
+    });
+
+    if (encontradas < CONTAS_ATIVO_IMOBILIZADO.length / 2) return { status: 'indeterminado', encontradas };
+    return { status: algumaDiferente ? 'divergencia' : 'zerado', encontradas };
+  }
+
+  async function processarPosicaoAtivo(file) {
+    const status = document.getElementById('statusPdfPosicao');
+    const areaRevisao = document.getElementById('revisaoPosicaoAtivo');
+    const corpo = document.getElementById('corpoRevisaoSaldos');
+
+    ultimoArquivoPosicaoAtivo = file;
+
+    if (!ultimoMapaBalancete) {
+      status.textContent = `✓ ${file.name} — sobe o Balancete primeiro pra eu poder comparar`;
+      status.className = 'save-status';
+      return;
+    }
+
+    function preencherRevisaoEConferencia(lido, texto, origemLabel) {
+      corpo.innerHTML = '';
+      CONTAS_ATIVO_IMOBILIZADO.forEach(({ codRed, descricao }) => {
+        const rowBalancete = Object.values(ultimoMapaBalancete).find(r => r.codRed === codRed);
+        const valorBalancete = rowBalancete ? rowBalancete.saldo : null;
+        const tr = montarLinhaRevisao(codRed, descricao, valorBalancete, lido[codRed] || '');
+        corpo.appendChild(tr);
+      });
+      corpo.querySelectorAll('tr').forEach(tr => {
+        atualizarConfereLinha(tr);
+        tr.querySelector('.input-ocr-valor').addEventListener('input', () => atualizarConfereLinha(tr));
+      });
+      areaRevisao.style.display = 'block';
+      confirmarRevisaoSaldos(false);
+
+      const diferenca = checarDiferencaZerada(texto);
+      const selAtivoImob = document.getElementById('c-ativoimobilizado110');
+      if (diferenca.status === 'zerado') selAtivoImob.value = 'OK zerado';
+      else if (diferenca.status === 'divergencia') selAtivoImob.value = 'Divergência';
+
+      status.textContent = `✓ ${file.name} — ${origemLabel}. Confira os valores abaixo.`;
+      status.className = 'save-status ok';
+    }
+
+    // 1ª tentativa: ler o texto real do PDF (mais rápido e 100% preciso — sem depender de OCR)
+    try {
+      const linhas = await extrairLinhasPdf(file);
+      const textoReal = linhas.map(l => l.texto).join('\n');
+      if (textoReal.trim().length > 200) {
+        const lidoTexto = parsePosicaoAtivoOCR(textoReal);
+        const encontrados = Object.keys(lidoTexto).length;
+        if (encontrados >= Math.ceil(CONTAS_ATIVO_IMOBILIZADO.length / 2)) {
+          preencherRevisaoEConferencia(lidoTexto, textoReal, 'lido direto do texto do PDF (sem precisar de OCR)');
+          return;
+        }
+        // tem texto real, mas não bateu com nenhuma conta esperada — aí sim pode ser o arquivo trocado
+        status.textContent = `⚠ ${file.name} tem texto real de PDF, mas não reconheci as contas esperadas da Posição Ativo — confere se você não trocou esse arquivo com o Balancete.`;
+        status.className = 'save-status err';
+        return;
+      }
+    } catch (err) {
+      console.error('Erro ao tentar ler texto real da Posição Ativo (seguindo pra OCR):', err);
+    }
+
+    // 2ª tentativa: sem texto real utilizável — assume que é imagem e faz OCR
+    status.textContent = `✓ ${file.name} — lendo imagem (OCR, pode levar um instante)...`;
+    status.className = 'save-status';
+
+    try {
+      const canvases = await rasterizarPdf(file, 3.0);
+      const texto = await ocrCanvases(canvases, (m) => {
+        if (m.status === 'recognizing text') {
+          status.textContent = `✓ ${file.name} — OCR ${Math.round(m.progress * 100)}%`;
+        }
+      });
+      const lidoOcr = parsePosicaoAtivoOCR(texto);
+      preencherRevisaoEConferencia(lidoOcr, texto, 'lido e conferido automaticamente (por OCR)');
+    } catch (err) {
+      console.error('Erro no OCR da Posição Ativo:', err);
+      status.textContent = `✓ ${file.name} — não consegui ler automaticamente, preencha a conferência manualmente`;
+      status.className = 'save-status';
+    }
+  }
+
+  document.getElementById('btnConfirmarRevisaoSaldos').addEventListener('click', () => confirmarRevisaoSaldos(true));
+
+  // Contas do Balancete que também são digitadas nos módulos Distribuidora/Tesouraria/Piedade
+  const CONTAS_MODULOS = [
+    { codRed: '1050',  chave: 'distribuidora', campo: 'estoque1050',    label: 'Estoque 1050' },
+    { codRed: '10040', chave: 'distribuidora', campo: 'caixinha10040',  label: 'Caixinha 10040' },
+    { codRed: '1053',  chave: 'distribuidora', campo: 'estoque1053',    label: 'Estoque 1053' },
+    { codRed: '10050', chave: 'distribuidora', campo: 'caixinha10050',  label: 'Caixinha 10050' },
+    { codRed: '10140', chave: 'distribuidora', campo: 'saldo10140',     label: 'Saldo 10140' },
+    { codRed: '10340', chave: 'distribuidora', campo: 'aplicacao10340', label: 'Aplicação 10340' },
+    { codRed: '1015',  chave: 'tesouraria',    campo: 'extrato1015',   label: 'Extrato 1015' },
+    { codRed: '1000',  chave: 'tesouraria',    campo: 'caixinha1000',  label: 'Caixinha 1000' },
+    { codRed: '10010', chave: 'piedade',       campo: 'caixinha10010', label: 'Caixinha 10010' },
+    { codRed: '10111', chave: 'piedade',       campo: 'extrato10111',  label: 'Extrato 10.111' },
+  ];
+
+  function acharContaPorCodRed(mapa, codRed) {
+    return Object.keys(mapa).find(k => mapa[k].codRed === codRed) || null;
+  }
+
+  async function buscarValorNoPeriodo(chave, campo, periodo) {
+    const entries = await getEntries(chave);
+    const limiteFim = new Date(periodo.fim);
+    limiteFim.setDate(limiteFim.getDate() + 45); // lançamentos costumam ser feitos até ~45 dias depois do fim do período
+    const candidatos = entries.filter(e => {
+      if (!e.data) return false;
+      const d = new Date(e.data + 'T00:00:00');
+      return d >= periodo.inicio && d <= limiteFim;
+    });
+    if (!candidatos.length) return null;
+    candidatos.sort((a, b) => a.data.localeCompare(b.data));
+    const ultimo = candidatos[candidatos.length - 1];
+    return parseFloat(ultimo[campo]) || 0;
+  }
+
+  // Monta a lista de códigos de conta (chave hierárquica do mapa do Balancete) que devem receber "OK"
+  // A competência do Balancete é o próprio mês do período (ex: período de junho = competência junho)
+  function competenciaDoBalancete() {
+    if (!ultimoPeriodoBalancete) return null;
+    const fim = ultimoPeriodoBalancete.fim;
+    return `${fim.getFullYear()}-${pad(fim.getMonth() + 1)}`;
+  }
+
+  async function buscarValorPorCompetencia(chave, campo, competencia) {
+    const entries = await getEntries(chave);
+    const doCompetencia = entries.filter(e => (e.competencia || (e.data ? e.data.slice(0, 7) : '')) === competencia);
+    if (!doCompetencia.length) return null;
+    return parseFloat(doCompetencia[doCompetencia.length - 1][campo]) || 0;
+  }
+
+  let ultimoDiagnosticoModulos = []; // [{ label, codRed, valorModulo, valorBalancete, bate, encontradoNoBalancete, encontradoNoModulo }]
+
+  async function determinarContasParaMarcar() {
+    ultimoDiagnosticoModulos = [];
+    if (!ultimoMapaBalancete) return [];
+    const contas = new Set();
+
+    if (document.getElementById('c-voluntarios308').value === 'OK, teve lançamentos') {
+      CODRED_VOLUNTARIOS.forEach(codRed => {
+        const contaKey = acharContaPorCodRed(ultimoMapaBalancete, codRed);
+        if (contaKey) contas.add(contaKey);
+      });
+    }
+
+    if (document.getElementById('c-ativoimobilizado110').value === 'OK zerado') {
+      CONTAS_ATIVO_IMOBILIZADO.forEach(({ codRed }) => {
+        const contaKey = acharContaPorCodRed(ultimoMapaBalancete, codRed);
+        if (contaKey) contas.add(contaKey);
+      });
+    }
+
+    document.querySelectorAll('#corpoRevisaoSaldos tr').forEach(tr => {
+      const statusCell = tr.querySelector('.conf-status');
+      if (statusCell && statusCell.textContent.includes('confere')) {
+        const codRed = statusCell.dataset.codred;
+        const contaKey = acharContaPorCodRed(ultimoMapaBalancete, codRed);
+        if (contaKey) contas.add(contaKey);
+      }
+    });
+
+    const competenciaAlvo = competenciaDoBalancete();
+    let periodo = ultimoPeriodoBalancete;
+    if (!periodo) {
+      const dataContab = document.getElementById('c-data').value;
+      if (dataContab) {
+        const d = new Date(dataContab + 'T00:00:00');
+        periodo = { inicio: new Date(d.getFullYear(), d.getMonth(), 1), fim: new Date(d.getFullYear(), d.getMonth() + 1, 0) };
+      }
+    }
+    for (const item of CONTAS_MODULOS) {
+      // 1ª tentativa: casamento exato pela Competência (preciso, quando o lançamento já tem esse campo)
+      let valorModulo = competenciaAlvo ? await buscarValorPorCompetencia(item.chave, item.campo, competenciaAlvo) : null;
+      // fallback: janela de datas em torno do período (lançamentos antigos sem competência)
+      if (valorModulo == null && periodo) {
+        valorModulo = await buscarValorNoPeriodo(item.chave, item.campo, periodo);
+      }
+      const contaKey = acharContaPorCodRed(ultimoMapaBalancete, item.codRed);
+      const row = contaKey ? ultimoMapaBalancete[contaKey] : null;
+      const bate = (valorModulo != null && row != null && Math.abs(row.saldo - valorModulo) < 0.01);
+      ultimoDiagnosticoModulos.push({
+        label: item.label,
+        codRed: item.codRed,
+        valorModulo: valorModulo,
+        valorBalancete: row ? row.saldo : null,
+        bate,
+        encontradoNoModulo: valorModulo != null,
+        encontradoNoBalancete: row != null,
+      });
+      if (valorModulo == null || !contaKey) continue;
+      if (bate) contas.add(contaKey);
+    }
+
+    return Array.from(contas);
+  }
+
+  async function gerarBalanceteConferido() {
+    const status = document.getElementById('statusGerarBalancete');
+    if (!ultimoArquivoBalancete || !ultimoMapaBalancete) {
+      status.textContent = 'Sobe o Balancete primeiro.';
+      status.className = 'save-status err';
+      return;
+    }
+    status.textContent = 'Gerando PDF...';
+    status.className = 'save-status';
+    try {
+      const contas = await determinarContasParaMarcar();
+      const temDivergenciasPraMarcar = ultimoDiagnosticoModulos.some(d => !d.bate && d.encontradoNoModulo && d.encontradoNoBalancete);
+      if (!contas.length && !temDivergenciasPraMarcar) {
+        status.textContent = 'Nenhum item conferido ainda pra marcar. Preenche a conferência antes.';
+        status.className = 'save-status';
+        return;
+      }
+      const bytes = await ultimoArquivoBalancete.arrayBuffer();
+      const pdfDoc = await PDFLib.PDFDocument.load(bytes);
+      const paginas = pdfDoc.getPages();
+      const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+      const fontNormal = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const fontMonoBold = await pdfDoc.embedFont(PDFLib.StandardFonts.CourierBold);
+
+      // "MÊS/ANO" em fonte grande, no espaço em branco à direita da linha "Localidade" — competência do período
+      const competenciaBalancete = competenciaDoBalancete();
+      if (ultimaLinhaLocalidadeBalancete && competenciaBalancete) {
+        const paginaCabecalho = paginas[ultimaLinhaLocalidadeBalancete.pagina - 1];
+        if (paginaCabecalho) {
+          const [anoRef, mesRef] = competenciaBalancete.split('-').map(Number);
+          const nomesMes = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+          const textoReferente = `${nomesMes[mesRef - 1]}/${anoRef}`;
+          const larguraTexto = fontBold.widthOfTextAtSize(textoReferente, 15);
+          const margemDireita = 20;
+          const xTexto = Math.max(
+            ultimaLinhaLocalidadeBalancete.xFim + 20,
+            paginaCabecalho.getWidth() - margemDireita - larguraTexto
+          );
+          paginaCabecalho.drawText(textoReferente, {
+            x: Math.min(xTexto, paginaCabecalho.getWidth() - margemDireita - larguraTexto),
+            y: ultimaLinhaLocalidadeBalancete.y - 2,
+            size: 15,
+            font: fontBold,
+            color: PDFLib.rgb(0, 0, 0),
+          });
+        }
+      }
+
+      contas.forEach(contaKey => {
+        const row = ultimoMapaBalancete[contaKey];
+        if (!row) return;
+        const pagina = paginas[row.pagina - 1];
+        if (!pagina) return;
+
+        const xIni = row.xInicio != null ? row.xInicio : 20;
+
+        // cobre a linha original com branco e redesenha os mesmos tokens em negrito, na mesma posição
+        // (medido no PDF real: a linha pontilhada de baixo fica ~3.4pt abaixo da baseline, a de cima ~5.9pt acima —
+        // o retângulo precisa caber estritamente entre as duas, senão apaga uma delas)
+        pagina.drawRectangle({
+          x: xIni - 2,
+          y: row.y - 2.5,
+          width: (row.xFim - xIni) + 45,
+          height: 7.5,
+          color: PDFLib.rgb(1, 1, 1),
+        });
+
+        if (row.tokens && row.tokens.length) {
+          row.tokens.forEach(tok => {
+            pagina.drawText(tok.str, {
+              x: tok.x,
+              y: row.y,
+              size: tok.tam || 8,
+              font: fontMonoBold,
+              color: PDFLib.rgb(0, 0, 0),
+            });
+          });
+        } else {
+          // sem tokens guardados (fallback): pelo menos garante que o "OK" apareça
+          pagina.drawText(row.descricao || '', { x: xIni, y: row.y, size: 8, font: fontMonoBold, color: PDFLib.rgb(0,0,0) });
+        }
+
+        const margemSegurancaBorda = 14; // ~5mm — margem que a maioria das impressoras não consegue imprimir
+        const limiteDireito = pagina.getWidth() - margemSegurancaBorda;
+        const espacoDisponivel = limiteDireito - (row.xFim + 6);
+
+        let tamanhoOK = 9;
+        let larguraOK = fontBold.widthOfTextAtSize('OK', tamanhoOK);
+        while (larguraOK > espacoDisponivel && tamanhoOK > 6) {
+          tamanhoOK -= 0.5;
+          larguraOK = fontBold.widthOfTextAtSize('OK', tamanhoOK);
+        }
+        const xOK = Math.min(row.xFim + 6, limiteDireito - larguraOK);
+
+        pagina.drawText('OK', {
+          x: xOK,
+          y: row.y - 1,
+          size: tamanhoOK,
+          font: fontBold,
+          color: PDFLib.rgb(0, 0.45, 0),
+        });
+      });
+
+      // Marca com X vermelho as contas dos módulos que foram comparadas mas NÃO bateram
+      // (ajuda a achar rápido onde está a diferença, sem precisar caçar na tabela)
+      const contasSet = new Set(contas);
+      ultimoDiagnosticoModulos.forEach(d => {
+        if (d.bate || !d.encontradoNoModulo || !d.encontradoNoBalancete) return;
+        const contaKey = acharContaPorCodRed(ultimoMapaBalancete, d.codRed);
+        if (!contaKey || contasSet.has(contaKey)) return;
+        const row = ultimoMapaBalancete[contaKey];
+        if (!row) return;
+        const pagina = paginas[row.pagina - 1];
+        if (!pagina) return;
+
+        const margemSegurancaBorda = 14;
+        const limiteDireito = pagina.getWidth() - margemSegurancaBorda;
+        const espacoDisponivel = limiteDireito - (row.xFim + 6);
+
+        let tamanhoX = 9;
+        let larguraX = fontBold.widthOfTextAtSize('X', tamanhoX);
+        while (larguraX > espacoDisponivel && tamanhoX > 6) {
+          tamanhoX -= 0.5;
+          larguraX = fontBold.widthOfTextAtSize('X', tamanhoX);
+        }
+        const xX = Math.min(row.xFim + 6, limiteDireito - larguraX);
+
+        pagina.drawText('X', {
+          x: xX,
+          y: row.y - 1,
+          size: tamanhoX,
+          font: fontBold,
+          color: PDFLib.rgb(0.78, 0.13, 0.13),
+        });
+      });
+
+      // Bloco de observação na última página (espaço em branco abaixo pra carimbo, sem linhas de assinatura)
+      const ultimaPagina = paginas[paginas.length - 1];
+      if (ultimaPagina) {
+        const { height } = ultimaPagina.getSize();
+        const hoje = new Date();
+        const dataFmt = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+        let yObs = Math.min(height - 340, 300);
+
+        ultimaPagina.drawText(`OK, conferido pelo Sistema Conselho Fiscal (SCF) na data de ${dataFmt}.`, {
+          x: 40, y: yObs, size: 10, font: fontBold, color: PDFLib.rgb(0, 0.3, 0),
+        });
+        yObs -= 22;
+        ultimaPagina.drawText('Conforme assinam os membros abaixo:', {
+          x: 40, y: yObs, size: 10, font: fontNormal, color: PDFLib.rgb(0.15, 0.15, 0.15),
+        });
+        // espaço em branco abaixo reservado pro carimbo — sem linhas
+      }
+
+      const outBytes = await pdfDoc.save();
+      const blob = new Blob([outBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Balancete_conferido.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+      const naoBateram = ultimoDiagnosticoModulos.filter(d => !d.bate);
+      let htmlDiagnostico = `✓ PDF gerado com ${contas.length} conta(s) marcada(s): ` +
+        contas.map(c => (ultimoMapaBalancete[c].codRed || c) + ' ' + ultimoMapaBalancete[c].descricao).join(', ');
+
+      if (naoBateram.length) {
+        htmlDiagnostico += '<br><br><strong>Não bateram (contas dos módulos):</strong><ul style="margin:4px 0 0 18px; padding:0;">' +
+          naoBateram.map(d => {
+            const fmtV = v => v == null ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            let motivo;
+            if (!d.encontradoNoModulo) motivo = 'não achei lançamento nesse mês no módulo';
+            else if (!d.encontradoNoBalancete) motivo = 'conta ' + d.codRed + ' não existe nesse Balancete';
+            else motivo = `marcada com X no PDF — módulo: ${fmtV(d.valorModulo)} × balancete: ${fmtV(d.valorBalancete)}`;
+            return `<li>${d.codRed} ${d.label} — ${motivo}</li>`;
+          }).join('') + '</ul>';
+      }
+
+      status.innerHTML = htmlDiagnostico;
+      status.className = 'save-status ok';
+    } catch (err) {
+      console.error('Erro ao gerar Balancete conferido:', err);
+      status.textContent = 'Não consegui gerar o PDF. Confere se o Balancete original está carregado.';
+      status.className = 'save-status err';
+    }
+  }
+
+  document.getElementById('btnGerarBalancete').addEventListener('click', gerarBalanceteConferido);
+
+  document.getElementById('c-pdf-posicao').addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if (!f) {
+      document.getElementById('statusPdfPosicao').textContent = '';
+      document.getElementById('statusPdfPosicao').className = 'save-status';
+      document.getElementById('revisaoPosicaoAtivo').style.display = 'none';
+      ultimoArquivoPosicaoAtivo = null;
+      return;
+    }
+    processarPosicaoAtivo(f);
+  });
+
+  // Extrai o período (ex: "01/06/2026 e 30/06/2026") e a posição da linha "Localidade" do Balancete —
+  // usado tanto no upload novo quanto no reprocessamento (edição/botão reprocessar), pra nunca esquecer nenhum dos dois
+  function extrairPeriodoELocalidade(linhas) {
+    const textoCompleto = linhas.map(l => l.texto).join('\n');
+    const mPeriodo = textoCompleto.match(/Per[íi]odo entre\s+(\d{2})\/(\d{2})\/(\d{4})\s+e\s+(\d{2})\/(\d{2})\/(\d{4})/i);
+    const periodo = mPeriodo ? {
+      inicio: new Date(+mPeriodo[3], +mPeriodo[2] - 1, +mPeriodo[1]),
+      fim: new Date(+mPeriodo[6], +mPeriodo[5] - 1, +mPeriodo[4])
+    } : null;
+
+    const linhaLocalidade = linhas.find(l => /Localidade/i.test(l.texto));
+    const posLocalidade = linhaLocalidade
+      ? { pagina: linhaLocalidade.pagina, y: linhaLocalidade.y, xFim: linhaLocalidade.xFim }
+      : null;
+
+    return { periodo, posLocalidade };
+  }
+
+  document.getElementById('c-pdf-balancete').addEventListener('change', async (e)=>{
+    const status = document.getElementById('statusPdfBalancete');
+    const f = e.target.files[0];
+    if (!f) { status.textContent = ''; status.className = 'save-status'; ultimoMapaBalancete = null; ultimoArquivoBalancete = null; return; }
+    status.textContent = `✓ ${f.name} — lendo...`;
+    status.className = 'save-status';
+    try {
+      const linhas = await extrairLinhasPdf(f);
+      const mapa = parseBalancete(linhas);
+      ultimoMapaBalancete = mapa;
+      ultimoArquivoBalancete = f;
+
+      // Extrai período e posição da Localidade (pra comparação com módulos e pro texto do cabeçalho)
+      const { periodo, posLocalidade } = extrairPeriodoELocalidade(linhas);
+      ultimoPeriodoBalancete = periodo;
+      ultimaLinhaLocalidadeBalancete = posLocalidade;
+      const textoCompleto = linhas.map(l => l.texto).join('\n');
+
+      autoPreencherConferenciaBalancete(mapa);
+
+      const totalContas = Object.keys(mapa).length;
+      if (totalContas === 0) {
+        if (textoCompleto.trim().length < 50) {
+          status.textContent = `⚠ ${f.name} não tem texto reconhecível (parece ser uma imagem) — confere se você não trocou esse arquivo com a Posição Ativo.`;
+        } else {
+          status.textContent = `⚠ ${f.name} carregado, mas não reconheci nenhuma conta — me avisa, isso é bug`;
+        }
+        status.className = 'save-status err';
+      } else {
+        status.textContent = `✓ ${f.name} — ${totalContas} contas reconhecidas, conferido automaticamente`;
+        status.className = 'save-status ok';
+      }
+    } catch (err) {
+      console.error('Erro ao ler Balancete:', err);
+      status.textContent = `✓ ${f.name} — não consegui ler automaticamente, confira manualmente`;
+      status.className = 'save-status';
+    }
+  });
+
+  /* ---------- MÓDULO PARECER (estrutura própria: 1 registro por competência) ---------- */
+  const SETORES_PARECER = [
+    { id: 'pz-tesouraria',    key: 'tesouraria',    label: '1. Tesouraria',                    obsChave: 'obsTesouraria' },
+    { id: 'pz-distribuidora', key: 'distribuidora', label: '2. Distribuidora e Fundo Bíblico',  obsChave: 'obsDistribuidora' },
+    { id: 'pz-contabilidade', key: 'contabilidade', label: '3. Contabilidade',                  obsChave: 'obsContabilidade' },
+    { id: 'pz-secretaria',    key: 'secretaria',    label: '4. Secretaria',                     obsChave: 'obsSecretaria' },
+    { id: 'pz-piedade',       key: 'piedade',       label: '5. Piedade',                        obsChave: 'obsPiedade' },
+  ];
+
+  // Puxa o texto salvo em cada aba de setor (Observação do setor) pra competência escolhida no Parecer
+  async function puxarObservacoesParaCompetencia(competencia){
+    for(const s of SETORES_PARECER){
+      const campo = document.getElementById(s.id);
+      if(!competencia){ campo.value = ''; continue; }
+      try{
+        const entries = await getEntries(s.obsChave);
+        const achado = entries.find(en => en.competencia === competencia);
+        campo.value = achado ? (achado.texto || '') : '';
+      }catch(err){
+        campo.value = '';
+      }
+    }
+  }
+
+  document.getElementById('pz-competencia').addEventListener('change', (e)=>{
+    puxarObservacoesParaCompetencia(e.target.value);
+  });
+
+  document.getElementById('btnAtualizarSetores').addEventListener('click', ()=>{
+    const competencia = document.getElementById('pz-competencia').value;
+    if(!competencia){ alert('Escolhe a competência primeiro.'); return; }
+    puxarObservacoesParaCompetencia(competencia);
+  });
+
+  function formatCompetenciaBR(aaaaMm){
+    const [ano, mes] = aaaaMm.split('-');
+    return `${mes}/${ano}`;
+  }
+
+  document.getElementById('formParecer').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const btn = document.getElementById('btnSalvarParecer');
+    const status = document.getElementById('saveStatusParecer');
+
+    const competencia = document.getElementById('pz-competencia').value;
+    const data = document.getElementById('pz-data').value;
+    if(!competencia || !data){
+      status.textContent = 'Preencha a competência e a data antes de salvar.';
+      status.className = 'save-status err';
+      return;
+    }
+
+    const novo = {
+      id: Date.now().toString(36),
+      competencia: competencia,
+      data: data,
+      localidade: document.getElementById('pz-localidade').value || '',
+      assinaturas: [
+        document.getElementById('pz-assin1').value || '',
+        document.getElementById('pz-assin2').value || '',
+        document.getElementById('pz-assin3').value || '',
+        document.getElementById('pz-assin4').value || '',
+      ],
+    };
+    SETORES_PARECER.forEach(s=>{
+      novo[s.key] = document.getElementById(s.id).value || '';
+    });
+
+    btn.disabled = true;
+    status.textContent = 'Salvando...';
+    status.className = 'save-status';
+
+    try{
+      let pareceres = await getEntries('parecer');
+      pareceres = pareceres.filter(p => p.competencia !== competencia); // 1 por competência: substitui se já existir
+      pareceres.push(novo);
+      pareceres.sort((a,b)=> a.competencia.localeCompare(b.competencia));
+      await saveEntries('parecer', pareceres);
+
+      status.textContent = 'Parecer salvo com sucesso.';
+      status.className = 'save-status ok';
+      await carregarPareceres();
+    }catch(err){
+      status.textContent = 'Não foi possível salvar. Tente novamente.';
+      status.className = 'save-status err';
+    }finally{
+      btn.disabled = false;
+    }
+  });
+
+  async function carregarPareceres(){
+    const wrap = document.getElementById('listaPareceres');
+    wrap.innerHTML = '<div class="empty-state">Carregando pareceres...</div>';
+
+    let pareceres = [];
+    try{
+      pareceres = await getEntries('parecer');
+    }catch(err){
+      wrap.innerHTML = '<div class="empty-state">Não foi possível carregar os pareceres.</div>';
+      return;
+    }
+
+    if(pareceres.length === 0){
+      wrap.innerHTML = '<div class="empty-state">Nenhum parecer salvo ainda. Use o formulário acima para começar.</div>';
+      return;
+    }
+
+    pareceres = [...pareceres].sort((a,b)=> b.competencia.localeCompare(a.competencia));
+
+    wrap.innerHTML = pareceres.map(p => `
+      <div class="parecer-list-item">
+        <div class="info">
+          <div class="competencia">Competência ${formatCompetenciaBR(p.competencia)}</div>
+          <div class="meta">Emitido em ${formatDataBR(p.data)} · ${p.localidade || ''}</div>
+        </div>
+        <div class="acoes">
+          <button class="btn-secundario" data-editar="${p.id}">Editar</button>
+          <button class="btn-secundario" data-imprimir="${p.id}">Imprimir</button>
+          <button class="btn-excluir-parecer" data-excluir="${p.id}">excluir</button>
+        </div>
+      </div>
+    `).join('');
+
+    wrap.querySelectorAll('[data-editar]').forEach(btn=>{
+      btn.addEventListener('click', ()=> preencherFormParecer(btn.dataset.editar));
+    });
+    wrap.querySelectorAll('[data-imprimir]').forEach(btn=>{
+      btn.addEventListener('click', ()=> imprimirParecer(btn.dataset.imprimir));
+    });
+    wrap.querySelectorAll('[data-excluir]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm('Excluir este parecer?')) return;
+        let all = await getEntries('parecer');
+        all = all.filter(p => p.id !== btn.dataset.excluir);
+        await saveEntries('parecer', all);
+        carregarPareceres();
+      });
+    });
+  }
+
+  async function preencherFormParecer(id){
+    const pareceres = await getEntries('parecer');
+    const p = pareceres.find(x => x.id === id);
+    if(!p) return;
+
+    document.getElementById('pz-competencia').value = p.competencia;
+    document.getElementById('pz-data').value = p.data;
+    document.getElementById('pz-localidade').value = p.localidade || '';
+    SETORES_PARECER.forEach(s=>{
+      document.getElementById(s.id).value = p[s.key] || '';
+    });
+    const assin = p.assinaturas || [];
+    document.getElementById('pz-assin1').value = assin[0] || '';
+    document.getElementById('pz-assin2').value = assin[1] || '';
+    document.getElementById('pz-assin3').value = assin[2] || '';
+    document.getElementById('pz-assin4').value = assin[3] || '';
+
+    document.getElementById('formParecer').scrollIntoView({behavior:'smooth'});
+  }
+
+  async function imprimirParecer(id){
+    const pareceres = await getEntries('parecer');
+    const p = pareceres.find(x => x.id === id);
+    if(!p) return;
+
+    const setoresHtml = SETORES_PARECER
+      .filter(s => p[s.key] && p[s.key].trim())
+      .map(s => `
+      <div class="p-setor-bloco">
+        <div class="p-setor-titulo">${s.label}</div>
+        <div class="p-setor-texto">${p[s.key].replace(/</g,'&lt;')}</div>
+      </div>
+    `).join('');
+
+    const assin = p.assinaturas || ['','','',''];
+    const assinaturasHtml = assin.map(nome => `
+      <div class="p-assinatura">
+        <div class="linha">${nome || '&nbsp;'}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('printSheet').innerHTML = `
+      <div class="p-folha p-folha-medida">
+      <div class="p-folha-topo-bloco">
+        <table class="p-topo">
+          <tr>
+            <td style="font-weight:700; font-size:12px;">CONGREGAÇÃO CRISTÃ NO BRASIL</td>
+            <td></td>
+            <td style="text-align:right;">Folha 1/1</td>
+          </tr>
+          <tr>
+            <td>RUA ALCIDES VICENSOTTI</td>
+            <td style="text-align:center;">ARTUR NOGUEIRA - SP</td>
+            <td style="text-align:right;">CNPJ 58.393.554/0001-86 - I.E.ISENTO</td>
+          </tr>
+        </table>
+
+        <div class="p-titulo">PARECER MENSAL CONSELHO FISCAL</div>
+
+        <div class="p-regua-grossa antes-conteudo"></div>
+
+        <div class="p-conteudo-meio">
+          <table class="p-info">
+            <tr>
+              <td class="lbl">CheckList</td>
+              <td>Administração / Mensal / Conselho Fiscal</td>
+              <td class="lbl">Localidade</td>
+              <td>${p.localidade || ''}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Competência</td>
+              <td>${formatCompetenciaBR(p.competencia)}</td>
+              <td class="lbl">Data</td>
+              <td>${formatDataBR(p.data)}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Tipo</td>
+              <td>Verificação</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </table>
+
+          <div class="p-regua-grossa" style="margin: 2.5mm 0 6mm;"></div>
+
+          <div style="font-weight:700; margin-bottom:4px; font-size:13px;">Setores</div>
+          <div class="p-setores-wrap">
+            ${setoresHtml}
+          </div>
+        </div>
+      </div>
+
+      <div class="p-folha-rodape-bloco">
+        <div class="p-regua-grossa antes-assinatura"></div>
+        <div class="p-assinaturas">${assinaturasHtml}</div>
+        <div class="p-rodape">
+          <div>CONSELHO FISCAL - CENTRAL DE ARTUR NOGUEIRA</div>
+          <div>FOLHA 1/1</div>
+        </div>
+        <div class="p-rodape-sistema">Relatório gerado e conferido pelo Sistema Conselho Fiscal — SCF</div>
+      </div>
+      </div>
+    `;
+
+    ajustarEImprimir();
+  }
+
+  /* Mede o conteúdo real da folha (bloco de topo + bloco de rodapé) e
+     posiciona/encolhe (se preciso) pra caber inteira numa página, com
+     o rodapé sempre colado na borda inferior de verdade. */
+  async function ajustarEImprimir(escalaMaxima){
+    escalaMaxima = escalaMaxima || 1.35;
+    const folha = document.querySelector('#printSheet .p-folha-medida');
+    if(!folha){ window.print(); return; }
+
+    const topoBloco = folha.querySelector('.p-folha-topo-bloco');
+    const rodapeBloco = folha.querySelector('.p-folha-rodape-bloco');
+
+    // espera as fontes carregarem, senão a medição fica errada e o
+    // texto "cresce" depois de eu já ter calculado o encolhimento
+    try{
+      if(document.fonts && document.fonts.ready){
+        await document.fonts.ready;
+      }
+    }catch(err){ /* segue sem esperar se der erro */ }
+
+    // dá um tempo extra pro navegador terminar de aplicar o layout
+    await new Promise(resolve => setTimeout(resolve, 60));
+
+    // reseta tudo antes de medir
+    folha.style.transform = 'none';
+    folha.style.width = '100%';
+    folha.style.height = 'auto';
+    topoBloco.style.height = 'auto';
+    topoBloco.style.transform = 'none';
+    topoBloco.style.width = '100%';
+
+    // mede quantos px correspondem à área útil da folha
+    const sonda = document.createElement('div');
+    sonda.style.cssText = 'position:fixed; visibility:hidden; height:189mm; width:1px;';
+    document.body.appendChild(sonda);
+    const alturaDisponivelPx = sonda.offsetHeight;
+    document.body.removeChild(sonda);
+
+    const alturaTopoNatural = topoBloco.scrollHeight;
+    const alturaRodapeNatural = rodapeBloco.scrollHeight;
+    const alturaTotalNatural = alturaTopoNatural + alturaRodapeNatural;
+
+    if(alturaTotalNatural > alturaDisponivelPx){
+      // não cabe nem esticando: encolhe tudo proporcionalmente, mantendo
+      // o rodapé colado logo depois do conteúdo (sem sobra pra esticar).
+      // IMPORTANTE: a altura da folha tem que ser topo+rodapé juntos —
+      // se for só o topo, o rodapé (position:absolute; bottom:0) fica
+      // com "bottom" relativo a uma folha baixa demais e sobrepõe o
+      // final do conteúdo.
+      const escala = alturaDisponivelPx / alturaTotalNatural;
+      folha.style.height = alturaTotalNatural + 'px';
+      folha.style.transformOrigin = 'top left';
+      folha.style.transform = `scale(${escala})`;
+      folha.style.width = `${100/escala}%`;
+
+      // mesma verificação de segurança: confere a posição real e reduz mais
+      // se ainda sobrar sobreposição (a folha inteira é o que escala aqui)
+      let escalaAtual = escala;
+      for(let tentativa = 0; tentativa < 10; tentativa++){
+        const rTopo = topoBloco.getBoundingClientRect();
+        const rRodape = rodapeBloco.getBoundingClientRect();
+        const folga = rRodape.top - rTopo.bottom;
+        if(folga >= 1 || escalaAtual <= 0.3) break;
+        escalaAtual = escalaAtual * 0.97;
+        folha.style.transform = `scale(${escalaAtual})`;
+        folha.style.width = `${100/escalaAtual}%`;
+      }
+    } else {
+      // sobra espaço: em vez de deixar vazio, AUMENTA o cabeçalho/conteúdo
+      // proporcionalmente (fonte e espaçamento maiores) pra preencher a
+      // página de verdade — o rodapé fica no tamanho normal, grudado embaixo.
+      folha.style.height = alturaDisponivelPx + 'px';
+
+      const espacoParaTopo = alturaDisponivelPx - alturaRodapeNatural;
+
+      // 1ª estimativa, medida com o texto na largura cheia (100%)
+      let escalaCima = espacoParaTopo / alturaTopoNatural;
+      escalaCima = Math.min(escalaCima, escalaMaxima);
+      escalaCima = Math.max(escalaCima, 1);
+
+      // Estreitar a largura (pra depois escalar de volta com scale()) faz o
+      // texto quebrar em MAIS linhas do que na largura cheia — então a altura
+      // natural medida antes fica menor que a altura real nessa largura mais
+      // estreita. Por isso preciso aplicar a largura primeiro, REMEDIR a altura
+      // de verdade nessa largura, e só então calcular a escala final —
+      // senão o conteúdo cresce mais do que o previsto e invade o rodapé.
+      topoBloco.style.width = `${100/escalaCima}%`;
+      const alturaTopoNaLarguraEstreita = topoBloco.scrollHeight;
+      escalaCima = espacoParaTopo / alturaTopoNaLarguraEstreita;
+      escalaCima = Math.min(escalaCima, escalaMaxima);
+      escalaCima = Math.max(escalaCima, 1);
+      topoBloco.style.width = `${100/escalaCima}%`;
+
+      topoBloco.style.transformOrigin = 'top left';
+      topoBloco.style.transform = `scale(${escalaCima})`;
+
+      // Continua crescendo aos poucos, conferindo a posição REAL a cada passo,
+      // se ainda sobrar bastante espaço em branco depois da estimativa inicial
+      // (protege contra a estimativa errar pra menos por causa de diferença de
+      // fonte/navegador — em vez de confiar só na conta teórica, vai testando
+      // até preencher de verdade ou bater no teto).
+      for(let tentativa = 0; tentativa < 25; tentativa++){
+        if(escalaCima >= escalaMaxima) break;
+        const rTopo = topoBloco.getBoundingClientRect();
+        const rRodape = rodapeBloco.getBoundingClientRect();
+        const folga = rRodape.top - rTopo.bottom;
+        if(folga < 8) break;
+        escalaCima = Math.min(escalaMaxima, escalaCima * 1.05);
+        topoBloco.style.width = `${100/escalaCima}%`;
+        topoBloco.style.transform = `scale(${escalaCima})`;
+      }
+
+      // Verificação final "de fé cega zero": confere a posição REAL renderizada
+      // (não uma conta teórica) e, se ainda sobrar qualquer sobreposição — seja
+      // por causa de fonte, medição, ou qualquer outro motivo — vai reduzindo a
+      // escala em passos pequenos até garantir folga de verdade entre o texto e
+      // o rodapé. Isso protege contra qualquer diferença de ambiente/fonte que
+      // meus cálculos teóricos não previram.
+      for(let tentativa = 0; tentativa < 10; tentativa++){
+        const rTopo = topoBloco.getBoundingClientRect();
+        const rRodape = rodapeBloco.getBoundingClientRect();
+        const folga = rRodape.top - rTopo.bottom;
+        if(folga >= 1 || escalaCima <= 1) break;
+        escalaCima = Math.max(1, escalaCima * 0.97);
+        topoBloco.style.width = `${100/escalaCima}%`;
+        topoBloco.style.transform = `scale(${escalaCima})`;
+      }
+    }
+
+    window.print();
+  }
+
+  /* ---------- MÓDULO PARECER COMPRAS (importado de planilha .xlsx) ---------- */
+  const COLS_COMPRAS = [
+    { key: 'data',               label: 'Data' },
+    { key: 'hora',                label: 'Hora' },
+    { key: 'serie',               label: 'Série' },
+    { key: 'numero',              label: 'Número' },
+    { key: 'remetente',           label: 'Remetente' },
+    { key: 'valor',               label: 'Valor' },
+    { key: 'statusDocto',         label: 'Status Docto' },
+    { key: 'docto',               label: 'Docto' },
+    { key: 'numeroCotacao',       label: 'Nº Cotação' },
+    { key: 'pedido',              label: 'Pedido' },
+    { key: 'statusContasAPagar',  label: 'Status C.Pagar' },
+    { key: 'qtdeCotacoes',        label: 'Qtde Cotações' },
+    { key: 'recebimento',         label: 'Recebimento' },
+  ];
+
+  function achaValorAposLabelXLSX(sheet, range, label){
+    for(let r = range.s.r; r <= Math.min(range.e.r, 12); r++){
+      for(let c = range.s.c; c <= range.e.c; c++){
+        const cell = sheet[XLSX.utils.encode_cell({r, c})];
+        if(cell && typeof cell.v === 'string' && cell.v.trim().replace(/:$/,'').toLowerCase() === label.toLowerCase()){
+          for(let c2 = c+1; c2 <= range.e.c + 4; c2++){
+            const cell2 = sheet[XLSX.utils.encode_cell({r, c: c2})];
+            if(cell2 && cell2.v !== undefined && cell2.v !== '') return cell2;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  function excelDataParaISO(valor){
+    if(valor instanceof Date){
+      const y = valor.getFullYear(), m = String(valor.getMonth()+1).padStart(2,'0'), d = String(valor.getDate()).padStart(2,'0');
+      return `${y}-${m}-${d}`;
+    }
+    return String(valor || '');
+  }
+
+  function parseWorkbookCompras(workbook){
+    const pareceres = [];
+    workbook.SheetNames.forEach(nomeAba=>{
+      const sheet = workbook.Sheets[nomeAba];
+      const range = XLSX.utils.decode_range(sheet['!ref']);
+
+      const compCell = achaValorAposLabelXLSX(sheet, range, 'Competência');
+      const dataCell = achaValorAposLabelXLSX(sheet, range, 'Data');
+      const localCell = achaValorAposLabelXLSX(sheet, range, 'Localidade');
+
+      if(!compCell) return; // pula aba sem competência reconhecível
+      const compRaw = String(compCell.v);
+      const partes = compRaw.split('/');
+      if(partes.length !== 2) return;
+      const competencia = `${partes[1]}-${partes[0].padStart(2,'0')}`;
+      const dataIso = dataCell ? excelDataParaISO(dataCell.v) : '';
+      const localidade = localCell ? String(localCell.v) : 'ADM - ARTUR NOGUEIRA - SP';
+
+      // achar linha de cabeçalho da tabela: coluna com 'Data' seguida de 'Hora' na coluna seguinte
+      let headerRow = null;
+      for(let r = range.s.r; r <= Math.min(range.e.r, 20); r++){
+        const a = sheet[XLSX.utils.encode_cell({r, c: 0})];
+        const b = sheet[XLSX.utils.encode_cell({r, c: 1})];
+        if(a && a.v === 'Data' && b && b.v === 'Hora'){ headerRow = r; break; }
+      }
+
+      const itens = [];
+      if(headerRow !== null){
+        let r = headerRow + 2; // pula subcabeçalho (1,2,3,OK)
+        while(true){
+          const cellA = sheet[XLSX.utils.encode_cell({r, c: 0})];
+          if(!cellA || cellA.v === undefined || cellA.v === '') break;
+          const get = (c) => {
+            const cell = sheet[XLSX.utils.encode_cell({r, c})];
+            return cell && cell.v !== undefined ? cell.v : '';
+          };
+          itens.push({
+            data: excelDataParaISO(cellA.v),
+            hora: String(get(1)),
+            serie: String(get(2)),
+            numero: String(get(3)),
+            remetente: String(get(4)),
+            valor: parseValorPlanilha(get(5)),
+            statusDocto: String(get(6)),
+            docto: String(get(7)),
+            numeroCotacao: String(get(8)),
+            pedido: String(get(9)),
+            statusContasAPagar: String(get(10)),
+            qtde1: String(get(11)),
+            qtde2: String(get(12)),
+            qtde3: String(get(13)),
+            recebimento: String(get(14)),
+          });
+          r++;
+        }
+      }
+
+      pareceres.push({ id: `compras-${competencia}`, competencia, data: dataIso, localidade, itens });
+    });
+    return pareceres;
+  }
+
+  document.getElementById('btnImportarCompras').addEventListener('click', ()=>{
+    const input = document.getElementById('cp-arquivo');
+    const status = document.getElementById('importStatusCompras');
+    const file = input.files[0];
+    if(!file){
+      status.textContent = 'Escolha um arquivo .xlsx primeiro.';
+      status.className = 'save-status err';
+      return;
+    }
+    status.textContent = 'Lendo planilha...';
+    status.className = 'save-status';
+
+    const reader = new FileReader();
+    reader.onload = async (e)=>{
+      try{
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        const novosPareceres = parseWorkbookCompras(workbook);
+
+        if(novosPareceres.length === 0){
+          status.textContent = 'Não encontrei nenhuma aba com competência reconhecível nessa planilha.';
+          status.className = 'save-status err';
+          return;
+        }
+
+        let existentes = await getEntries('parecerCompras');
+        novosPareceres.forEach(novo=>{
+          existentes = existentes.filter(p => p.competencia !== novo.competencia);
+          existentes.push(novo);
+        });
+        existentes.sort((a,b)=> a.competencia.localeCompare(b.competencia));
+        await saveEntries('parecerCompras', existentes);
+
+        status.textContent = `Importado(s) ${novosPareceres.length} mês(es) com sucesso.`;
+        status.className = 'save-status ok';
+        input.value = '';
+        await carregarComprasParecer();
+      }catch(err){
+        status.textContent = 'Erro ao importar: ' + err.message;
+        status.className = 'save-status err';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  async function carregarComprasParecer(){
+    const wrap = document.getElementById('listaComprasParecer');
+    wrap.innerHTML = '<div class="empty-state">Carregando...</div>';
+
+    let pareceres = [];
+    try{
+      pareceres = await getEntries('parecerCompras');
+    }catch(err){
+      wrap.innerHTML = '<div class="empty-state">Não foi possível carregar.</div>';
+      return;
+    }
+
+    if(pareceres.length === 0){
+      wrap.innerHTML = '<div class="empty-state">Nenhum parecer de compras importado ainda.</div>';
+      return;
+    }
+
+    pareceres = [...pareceres].sort((a,b)=> b.competencia.localeCompare(a.competencia));
+
+    wrap.innerHTML = pareceres.map(p => {
+      const total = p.itens.reduce((s,i)=> s + (Number(i.valor)||0), 0);
+      return `
+      <div class="parecer-list-item">
+        <div class="info">
+          <div class="competencia">Competência ${formatCompetenciaBR(p.competencia)}</div>
+          <div class="meta">${p.itens.length} item(ns) · Total ${formatMoeda(total)} · Emitido em ${p.data ? formatDataBR(p.data) : '-'}</div>
+        </div>
+        <div class="acoes">
+          <button class="btn-secundario" data-editar-compras="${p.id}">Editar</button>
+          <button class="btn-secundario" data-imprimir-compras="${p.id}">Imprimir</button>
+          <button class="btn-excluir-parecer" data-excluir-compras="${p.id}">excluir</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('[data-editar-compras]').forEach(btn=>{
+      btn.addEventListener('click', ()=> editarCompras(btn.dataset.editarCompras));
+    });
+    wrap.querySelectorAll('[data-imprimir-compras]').forEach(btn=>{
+      btn.addEventListener('click', ()=> imprimirCompras(btn.dataset.imprimirCompras));
+    });
+    wrap.querySelectorAll('[data-excluir-compras]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm('Excluir este parecer de compras?')) return;
+        let all = await getEntries('parecerCompras');
+        all = all.filter(p => p.id !== btn.dataset.excluirCompras);
+        await saveEntries('parecerCompras', all);
+        carregarComprasParecer();
+      });
+    });
+  }
+
+  async function editarCompras(id){
+    const pareceres = await getEntries('parecerCompras');
+    const p = pareceres.find(x => x.id === id);
+    if(!p) return;
+
+    document.getElementById('cp-competencia').value = p.competencia;
+    document.getElementById('cp-data').value = p.data || '';
+    document.getElementById('cp-localidade').value = p.localidade || 'ADM - ARTUR NOGUEIRA - SP';
+
+    const assin = p.assinaturas || [];
+    document.getElementById('cp-assin1').value = assin[0] || '';
+    document.getElementById('cp-assin2').value = assin[1] || '';
+    document.getElementById('cp-assin3').value = assin[2] || '';
+    document.getElementById('cp-assin4').value = assin[3] || '';
+
+    comprasEmEdicao = p.itens.map(item => ({
+      ...item,
+      qtde1: item.qtde1 === 'X',
+      qtde2: item.qtde2 === 'X',
+      qtde3: item.qtde3 === 'X',
+    }));
+
+    renderTabelaRevisao();
+    document.getElementById('revisaoComprasBox').style.display = 'block';
+    document.getElementById('revisaoComprasBox').scrollIntoView({behavior:'smooth'});
+  }
+
+  /* ---------- IMPORTAÇÃO DA EXPORTAÇÃO CRUA (com revisão na tela) ---------- */
+  let comprasEmEdicao = [];
+
+  function excelValorParaISO(valor){
+    // aceita Date (do cellDates:true) ou string tipo "2026-06-02T00:00:00"
+    if(valor instanceof Date){
+      const y = valor.getFullYear(), m = String(valor.getMonth()+1).padStart(2,'0'), d = String(valor.getDate()).padStart(2,'0');
+      return `${y}-${m}-${d}`;
+    }
+    if(typeof valor === 'string'){
+      return valor.split('T')[0];
+    }
+    return '';
+  }
+
+  // Number() não entende formato brasileiro ("1.234,56" vira NaN) nem prefixo de moeda ("R$ 89,70");
+  // trata número puro OU texto formatado, com ou sem "R$"/espaços na frente
+  function parseValorPlanilha(v){
+    if (v == null || v === '') return 0;
+    if (typeof v === 'number') return v;
+    const limpo = String(v)
+      .replace(/[^\d.,-]/g, '')  // tira "R$", espaços e qualquer coisa que não seja dígito/ponto/vírgula/sinal
+      .trim()
+      .replace(/\./g, '')       // tira separador de milhar
+      .replace(',', '.');       // vírgula decimal -> ponto
+    return parseFloat(limpo) || 0;
+  }
+
+  function parseExportacaoCrua(workbook){
+    const nomeAba = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[nomeAba];
+    const linhas = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' });
+
+    // primeira linha = cabeçalho; descobre os índices pelas colunas (ignora a 1ª coluna "Ações"/código)
+    const cabecalho = linhas[0].map(h => String(h || '').trim().toLowerCase());
+    const idx = {
+      data: cabecalho.indexOf('data'),
+      hora: cabecalho.indexOf('hora'),
+      serie: cabecalho.indexOf('série'),
+      numero: cabecalho.indexOf('número'),
+      remetente: cabecalho.indexOf('remetente'),
+      valor: cabecalho.indexOf('valor'),
+      statusDocto: cabecalho.indexOf('status documento'),
+      docto: cabecalho.indexOf('documento'),
+      numeroCotacao: cabecalho.indexOf('cotação'),
+      pedido: cabecalho.indexOf('pedido'),
+      statusContasAPagar: cabecalho.indexOf('status contas a pagar'),
+    };
+
+    const itens = [];
+    for(let i = 1; i < linhas.length; i++){
+      const linha = linhas[i];
+      if(!linha || linha.length === 0) continue;
+      const dataVal = idx.data >= 0 ? linha[idx.data] : '';
+      if(!dataVal) continue;
+      itens.push({
+        data: excelValorParaISO(dataVal),
+        hora: idx.hora >= 0 ? String(linha[idx.hora] || '') : '',
+        serie: idx.serie >= 0 ? String(linha[idx.serie] || '') : '',
+        numero: idx.numero >= 0 ? String(linha[idx.numero] || '') : '',
+        remetente: idx.remetente >= 0 ? String(linha[idx.remetente] || '') : '',
+        valor: idx.valor >= 0 ? parseValorPlanilha(linha[idx.valor]) : 0,
+        statusDocto: idx.statusDocto >= 0 ? String(linha[idx.statusDocto] || '') : '',
+        docto: idx.docto >= 0 ? String(linha[idx.docto] || '') : '',
+        numeroCotacao: idx.numeroCotacao >= 0 ? String(linha[idx.numeroCotacao] || '') : '',
+        pedido: idx.pedido >= 0 ? String(linha[idx.pedido] || '') : '',
+        statusContasAPagar: idx.statusContasAPagar >= 0 ? String(linha[idx.statusContasAPagar] || '') : '',
+        // campos preenchidos manualmente na revisão:
+        qtde1: false, qtde2: false, qtde3: false,
+        recebimento: '',
+      });
+    }
+    itens.sort((a,b) => b.valor - a.valor);
+    return itens;
+  }
+
+  function renderTabelaRevisao(){
+    const wrap = document.getElementById('tabelaRevisaoCompras');
+    if(comprasEmEdicao.length === 0){
+      wrap.innerHTML = '<div class="empty-state">Nenhuma linha encontrada nesse arquivo.</div>';
+      return;
+    }
+    const linhas = comprasEmEdicao.map((item, i) => `
+      <tr>
+        <td>${formatDataBR(item.data)}</td>
+        <td>${item.numero}</td>
+        <td>${item.remetente}</td>
+        <td class="num">${formatMoeda(item.valor)}</td>
+        <td>${item.docto}</td>
+        <td>${item.numeroCotacao}</td>
+        <td>${item.pedido}</td>
+        <td>${item.statusContasAPagar}</td>
+        <td style="text-align:center;"><input type="checkbox" data-rev="qtde1" data-idx="${i}" ${item.qtde1?'checked':''}></td>
+        <td style="text-align:center;"><input type="checkbox" data-rev="qtde2" data-idx="${i}" ${item.qtde2?'checked':''}></td>
+        <td style="text-align:center;"><input type="checkbox" data-rev="qtde3" data-idx="${i}" ${item.qtde3?'checked':''}></td>
+        <td>
+          <select data-rev="recebimento" data-idx="${i}">
+            <option value="">-</option>
+            <option value="OK" ${item.recebimento==='OK'?'selected':''}>OK</option>
+            <option value="N" ${item.recebimento==='N'?'selected':''}>N</option>
+          </select>
+        </td>
+      </tr>
+    `).join('');
+
+    wrap.innerHTML = `
+      <table class="tabela-revisao">
+        <colgroup>
+          <col style="width:7%"><col style="width:6%"><col style="width:24%">
+          <col style="width:8%"><col style="width:9%"><col style="width:8%"><col style="width:7%">
+          <col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:7%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Data</th><th>Número</th><th>Remetente</th><th>Valor</th>
+            <th>Documento</th><th>Nº Cotação</th><th>Pedido</th><th>Status Contas a Pagar</th>
+            <th>Cot. 1</th><th>Cot. 2</th><th>Cot. 3</th><th>Receb.</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    `;
+
+    wrap.querySelectorAll('[data-rev]').forEach(el=>{
+      el.addEventListener('change', ()=>{
+        const i = Number(el.dataset.idx);
+        const campo = el.dataset.rev;
+        comprasEmEdicao[i][campo] = el.type === 'checkbox' ? el.checked : el.value;
+      });
+    });
+  }
+
+  document.getElementById('btnImportarCru').addEventListener('click', ()=>{
+    const input = document.getElementById('cp-arquivo-cru');
+    const status = document.getElementById('importStatusCru');
+    const competencia = document.getElementById('cp-competencia').value;
+    const data = document.getElementById('cp-data').value;
+
+    if(!competencia || !data){
+      status.textContent = 'Preencha a competência e a data antes de importar.';
+      status.className = 'save-status err';
+      return;
+    }
+    const file = input.files[0];
+    if(!file){
+      status.textContent = 'Escolha o arquivo exportado primeiro.';
+      status.className = 'save-status err';
+      return;
+    }
+
+    status.textContent = 'Lendo arquivo...';
+    status.className = 'save-status';
+
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      try{
+        const data8 = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data8, { type: 'array', cellDates: true });
+        comprasEmEdicao = parseExportacaoCrua(workbook);
+
+        if(comprasEmEdicao.length === 0){
+          status.textContent = 'Não encontrei linhas com data válida nesse arquivo.';
+          status.className = 'save-status err';
+          return;
+        }
+
+        renderTabelaRevisao();
+        document.getElementById('revisaoComprasBox').style.display = 'block';
+        document.getElementById('revisaoComprasBox').scrollIntoView({behavior:'smooth'});
+        status.textContent = `${comprasEmEdicao.length} linha(s) importada(s). Revise abaixo e salve.`;
+        status.className = 'save-status ok';
+      }catch(err){
+        status.textContent = 'Erro ao ler o arquivo: ' + err.message;
+        status.className = 'save-status err';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  document.getElementById('btnSalvarRevisaoCompras').addEventListener('click', async ()=>{
+    const status = document.getElementById('saveStatusRevisaoCompras');
+    const competencia = document.getElementById('cp-competencia').value;
+    const data = document.getElementById('cp-data').value;
+    const localidade = document.getElementById('cp-localidade').value || 'ADM - ARTUR NOGUEIRA - SP';
+    const assinaturas = [
+      document.getElementById('cp-assin1').value || '',
+      document.getElementById('cp-assin2').value || '',
+      document.getElementById('cp-assin3').value || '',
+      document.getElementById('cp-assin4').value || '',
+    ];
+
+    if(!competencia){
+      status.textContent = 'Preencha a competência antes de salvar.';
+      status.className = 'save-status err';
+      return;
+    }
+
+    // monta os itens no mesmo formato usado na impressão (qtdeCotacoes como texto + recebimento)
+    const itensFinal = comprasEmEdicao.map(item => ({
+      data: item.data, hora: item.hora, serie: item.serie, numero: item.numero,
+      remetente: item.remetente, valor: item.valor, statusDocto: item.statusDocto,
+      docto: item.docto, numeroCotacao: item.numeroCotacao, pedido: item.pedido,
+      statusContasAPagar: item.statusContasAPagar,
+      qtde1: item.qtde1 ? 'X' : '',
+      qtde2: item.qtde2 ? 'X' : '',
+      qtde3: item.qtde3 ? 'X' : '',
+      recebimento: item.recebimento,
+    }));
+
+    status.textContent = 'Salvando...';
+    status.className = 'save-status';
+
+    try{
+      let existentes = await getEntries('parecerCompras');
+      existentes = existentes.filter(p => p.competencia !== competencia);
+      existentes.push({ id: `compras-${competencia}`, competencia, data, localidade, assinaturas, itens: itensFinal });
+      existentes.sort((a,b)=> a.competencia.localeCompare(b.competencia));
+      await saveEntries('parecerCompras', existentes);
+
+      status.textContent = 'Parecer de compras salvo com sucesso.';
+      status.className = 'save-status ok';
+      comprasEmEdicao = [];
+      document.getElementById('revisaoComprasBox').style.display = 'none';
+      document.getElementById('cp-arquivo-cru').value = '';
+      document.getElementById('cp-assin1').value = '';
+      document.getElementById('cp-assin2').value = '';
+      document.getElementById('cp-assin3').value = '';
+      document.getElementById('cp-assin4').value = '';
+      await carregarComprasParecer();
+    }catch(err){
+      status.textContent = 'Não foi possível salvar. Tente novamente.';
+      status.className = 'save-status err';
+    }
+  });
+
+  async function imprimirCompras(id){
+    const pareceres = await getEntries('parecerCompras');
+    const p = pareceres.find(x => x.id === id);
+    if(!p) return;
+
+    const total = p.itens.reduce((s,i)=> s + (Number(i.valor)||0), 0);
+
+    const assinComp = (p.assinaturas || []).filter(n => n && n.trim());
+    const assinaturasComprasHtml = assinComp.length > 0 ? `
+      <div class="p-assinaturas" style="grid-template-columns: repeat(${assinComp.length}, 1fr);">
+        ${assinComp.map(nome => `<div class="p-assinatura"><div class="linha">${nome}</div></div>`).join('')}
+      </div>
+    ` : '';
+
+    const linhasHtml = p.itens.map(item => `
+      <tr>
+        <td>${formatDataBR(item.data)}</td>
+        <td>${item.serie}</td>
+        <td>${item.numero}</td>
+        <td>${item.remetente}</td>
+        <td class="num">${formatMoeda(item.valor)}</td>
+        <td>${item.statusDocto}</td>
+        <td>${item.docto}</td>
+        <td>${item.numeroCotacao}</td>
+        <td>${item.pedido}</td>
+        <td>${item.statusContasAPagar}</td>
+        <td style="text-align:center;">${item.qtde1 || ''}</td>
+        <td style="text-align:center;">${item.qtde2 || ''}</td>
+        <td style="text-align:center;">${item.qtde3 || ''}</td>
+        <td>${item.recebimento}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('printSheet').innerHTML = `
+      <div class="p-folha p-folha-tabela p-folha-medida p-folha--flex">
+      <div class="p-folha-topo-bloco">
+        <table class="p-topo">
+          <tr>
+            <td style="font-weight:700; font-size:12px;">CONGREGAÇÃO CRISTÃ NO BRASIL</td>
+            <td></td>
+            <td style="text-align:right;">Folha 1/1</td>
+          </tr>
+          <tr>
+            <td>RUA ALCIDES VICENSOTTI</td>
+            <td style="text-align:center;">ARTUR NOGUEIRA - SP</td>
+            <td style="text-align:right;">CNPJ 58.393.554/0001-86 - I.E.ISENTO</td>
+          </tr>
+        </table>
+
+        <div class="p-titulo">PARECER MENSAL CONSELHO FISCAL - COMPRAS</div>
+
+        <div class="p-regua-grossa antes-conteudo"></div>
+
+        <div class="p-conteudo-meio">
+          <table class="p-info">
+            <tr>
+              <td class="lbl">CheckList</td>
+              <td>Administração / Mensal / Conselho Fiscal</td>
+              <td class="lbl">Localidade</td>
+              <td>${p.localidade || ''}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Competência</td>
+              <td>${formatCompetenciaBR(p.competencia)}</td>
+              <td class="lbl">Data</td>
+              <td>${p.data ? formatDataBR(p.data) : ''}</td>
+            </tr>
+          </table>
+
+          <div class="p-regua-grossa" style="margin: 2.5mm 0 6mm;"></div>
+
+          <table class="p-tabela-compras" style="font-size:9px;">
+            <colgroup>
+              <col style="width:7%"><col style="width:3%"><col style="width:5%">
+              <col style="width:26%"><col style="width:7%"><col style="width:8%"><col style="width:8%">
+              <col style="width:6%"><col style="width:6%"><col style="width:8%">
+              <col style="width:3%"><col style="width:3%"><col style="width:3%"><col style="width:7%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th rowspan="2">Data</th><th rowspan="2">Série</th><th rowspan="2">Número</th><th rowspan="2">Remetente</th>
+                <th class="num" rowspan="2">Valor</th><th rowspan="2">Status Documento</th><th rowspan="2">Documento</th><th rowspan="2">Nº Cotação</th>
+                <th rowspan="2">Pedido</th><th rowspan="2">Status Contas a Pagar</th>
+                <th colspan="3" style="text-align:center;">Qtde de Cotações</th>
+                <th rowspan="2">Recebimento</th>
+              </tr>
+              <tr>
+                <th style="text-align:center;">1</th><th style="text-align:center;">2</th><th style="text-align:center;">3</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${linhasHtml}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" style="text-align:right; font-weight:700;">Total</td>
+                <td class="num" style="font-weight:700;">${formatMoeda(total)}</td>
+                <td colspan="9"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="p-folha-rodape-bloco">
+        ${assinaturasComprasHtml ? `<div class="p-regua-grossa antes-assinatura"></div>${assinaturasComprasHtml}` : ''}
+        <div class="p-rodape">
+          <div>CONSELHO FISCAL - CENTRAL DE ARTUR NOGUEIRA</div>
+          <div>FOLHA 1/1</div>
+        </div>
+        <div class="p-rodape-sistema">Relatório gerado e conferido pelo Sistema Conselho Fiscal — SCF</div>
+      </div>
+      </div>
+    `;
+
+    if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    // O CSS (height:100%) já estica a tabela pra preencher a folha quando sobra espaço.
+    // Isso só corrige o caso contrário: quando tem itens demais e o conteúdo natural
+    // não cabe numa folha só — aí reduz a fonte na medida exata pra caber.
+    const folha = document.querySelector('#printSheet .p-folha--flex');
+    const tabela = folha.querySelector('.p-tabela-compras');
+    const rodapeBloco = folha.querySelector('.p-folha-rodape-bloco');
+
+    tabela.style.zoom = '';
+    tabela.style.height = 'auto';
+    await new Promise(r => requestAnimationFrame(r));
+
+    const folhaRect = folha.getBoundingClientRect();
+    const tabelaRect = tabela.getBoundingClientRect();
+    const rodapeAltura = rodapeBloco.getBoundingClientRect().height;
+
+    const espacoParaTabela = (folhaRect.bottom - rodapeAltura) - tabelaRect.top;
+    const necessario = tabelaRect.height;
+
+    if(necessario > espacoParaTabela){
+      // zoom (e não font-size) porque encolhe fonte + preenchimento das células juntos,
+      // na mesma proporção — font-size sozinho não reduz o preenchimento fixo em px
+      // das células, então a tabela não encolhia o suficiente.
+      const fator = Math.max(0.3, (espacoParaTabela / necessario) * 0.97); // 3% de folga
+      tabela.style.zoom = fator;
+      // não força height:100% aqui: já encolhemos na medida certa, esticar de novo
+      // devolveria a sobreposição com o rodapé.
+    } else {
+      tabela.style.height = '100%';
+    }
+
+    window.print();
+  }
+
+  /* ---------- INÍCIO ---------- */
+  ligarImportacaoJson();
+  iniciarFirebase();
+</script>
+
+</body>
+</html>
