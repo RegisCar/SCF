@@ -1,12 +1,8 @@
-// Cole aqui os dados do SEU projeto Firebase:
-// Firebase > Configurações do projeto (engrenagem) > Seus apps > SCF > "Configuração do SDK" > Config.
-// Substitua cada COLE_AQUI pelo valor que aparece lá, mantendo as aspas.
-// (Esses valores não são senha: quem protege os dados é o login e as regras do Firestore.)
 window.FIREBASE_CONFIG = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI.firebaseapp.com",
-  projectId: "COLE_AQUI",
-  storageBucket: "COLE_AQUI.firebasestorage.app",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+  apiKey: "AIzaSyCNJYYAtqeA6JROdUNWJCNXkakyhsXzaFc",
+  authDomain: "scf-artur-nogueira.firebaseapp.com",
+  projectId: "scf-artur-nogueira",
+  storageBucket: "scf-artur-nogueira.firebasestorage.app",
+  messagingSenderId: "1093919284741",
+  appId: "1:1093919284741:web:1b44582b16c87f1a1e466c"
 };
