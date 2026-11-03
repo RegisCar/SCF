@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#3E2069">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SCF">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <title>SCF · Sistema Conselho Fiscal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -536,6 +544,13 @@
     font-style: italic;
   }
 
+  /* Tabelas de lançamentos: no celular rolam para o lado dentro do próprio quadro,
+     em vez de alargar a página inteira. */
+  [id^="tableWrap"]{
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   table.data-table{
     width: 100%;
     border-collapse: collapse;
@@ -1014,6 +1029,7 @@
   .login-card input:focus{ outline: none; border-color: var(--purple-light); }
   .login-card .link-btn{ align-self: center; }
   .login-card .save-status{ text-align: center; min-height: 16px; }
+  .link-btn[hidden]{ display: none !important; }
 </style>
 </head>
 <body>
@@ -1031,6 +1047,7 @@
     </label>
     <button type="submit" class="btn-primary" id="btnEntrar">Entrar</button>
     <button type="button" class="link-btn" id="btnEsqueci">Esqueci a senha</button>
+    <button type="button" class="link-btn" id="btnInstalarLogin" hidden>Instalar aplicativo no celular</button>
     <span class="save-status" id="loginStatus"></span>
   </form>
 </div>
@@ -1048,7 +1065,7 @@
       <div class="who">ADM · <span id="userLocation">ARTUR NOGUEIRA — SP</span></div>
       <div class="clock" id="clock">carregando...</div>
       <div class="clock" style="opacity:0.55;">versão 2026-10-14-online</div>
-      <div class="clock"><span id="userEmail"></span> <button type="button" class="link-btn" id="btnSair" style="color:rgba(255,255,255,0.85);">sair</button></div>
+      <div class="clock"><span id="userEmail"></span> <button type="button" class="link-btn" id="btnSair" style="color:rgba(255,255,255,0.85);">sair</button> <button type="button" class="link-btn" id="btnInstalarTopo" style="color:rgba(255,255,255,0.85);" hidden>instalar app</button></div>
     </div>
   </div>
   <nav>
@@ -4503,6 +4520,38 @@
   }
 
   /* ---------- INÍCIO ---------- */
+  /* ---------- INSTALAR COMO APLICATIVO (PWA) ---------- */
+  let eventoInstalar = null;
+  const botoesInstalar = ['btnInstalarLogin', 'btnInstalarTopo'].map(id => document.getElementById(id)).filter(Boolean);
+  const jaInstalado = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const ehIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function mostrarBotoesInstalar(mostrar){ botoesInstalar.forEach(b => { b.hidden = !mostrar; }); }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    eventoInstalar = e;
+    if (!jaInstalado()) mostrarBotoesInstalar(true);
+  });
+  window.addEventListener('appinstalled', () => { eventoInstalar = null; mostrarBotoesInstalar(false); });
+  if (!jaInstalado() && ehIOS()) mostrarBotoesInstalar(true);
+
+  botoesInstalar.forEach(b => b.addEventListener('click', async () => {
+    if (eventoInstalar) {
+      eventoInstalar.prompt();
+      try { await eventoInstalar.userChoice; } catch (err) { /* o usuário fechou a janela */ }
+      eventoInstalar = null;
+      mostrarBotoesInstalar(false);
+      return;
+    }
+    alert('Para instalar no iPhone ou iPad:\n\n1. Abra esta página no Safari.\n2. Toque no botão Compartilhar (o quadrado com uma seta para cima).\n3. Toque em "Adicionar à Tela de Início".\n4. Toque em "Adicionar".');
+  }));
+
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker não registrado:', err));
+    });
+  }
+
   ligarImportacaoJson();
   iniciarFirebase();
 </script>
