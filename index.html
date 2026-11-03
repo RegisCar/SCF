@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#3E2069">
+<meta name="theme-color" content="#438EB9">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SCF">
@@ -24,17 +24,21 @@
 <script src="firebase-config.js"></script>
 <style>
   :root{
-    --purple-deep: #3E2069;
-    --purple: #4C2A85;
-    --purple-light: #6B3FA0;
-    --purple-pale: #EFEAFB;
-    --lavender-bg: #F3EFFB;
-    --gold: #C79A3B;
-    --gold-soft: #F1E4C4;
-    --ink: #241B3A;
-    --ink-soft: #6B6280;
+    /* Os nomes --purple* vieram do visual antigo; agora guardam a paleta azul. */
+    --purple-deep: #2E6589;
+    --purple: #438EB9;
+    --purple-light: #62A8D1;
+    --purple-pale: #E6F1F8;
+    --lavender-bg: #F5F5F5;
+    --gold: #E0902A;
+    --gold-soft: #FFE2B0;
+    --ink: #2F3A45;
+    --ink-soft: #66727E;
     --white: #FFFFFF;
-    --line: #E3DCF4;
+    --line: #DCE5EC;
+    --topbar-h: 45px;
+    --sidebar-w: 200px;
+    --sidebar-w-mini: 44px;
   }
 
   * { box-sizing: border-box; }
@@ -46,119 +50,207 @@
     min-height: 100vh;
   }
 
-  /* ---------- HEADER ---------- */
-  header{
-    background: linear-gradient(135deg, var(--purple-deep), var(--purple) 55%, var(--purple-light));
-    color: white;
-    box-shadow: 0 2px 14px rgba(62,32,105,0.25);
-    position: sticky;
-    top: 0;
-    z-index: 20;
-  }
-
-  .top-bar{
+  /* ---------- BARRA SUPERIOR ---------- */
+  header.topbar{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    background: #438EB9;
+    color: #fff;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
-    padding: 14px 28px;
-    gap: 20px;
+    z-index: 50;
   }
-
-  .brand{
-    display: flex;
-    align-items: center;
-    gap: 14px;
+  .topbar-left{ display: flex; align-items: center; min-width: 0; }
+  .menu-toggle{
+    display: none;
+    background: none; border: none; color: #fff;
+    width: 44px; height: 100%;
+    cursor: pointer; align-items: center; justify-content: center;
   }
-
-  .brand-seal{
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 32% 30%, var(--gold-soft), var(--gold) 70%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--purple-deep);
-    font-family: 'Fraunces', serif;
+  .menu-toggle svg{ width: 24px; height: 24px; fill: currentColor; }
+  .topbar-brand{
+    font-size: 26px;
     font-weight: 700;
-    font-size: 15px;
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.18), inset 0 1px 2px rgba(255,255,255,0.5);
-    flex-shrink: 0;
+    letter-spacing: 0;
+    padding: 0 22px 0 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+  .topbar-right{ display: flex; align-items: stretch; }
+  .tb-box{
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: default;
+    transition: filter 0.15s ease;
+    min-width: 0;
+  }
+  button.tb-box{ cursor: pointer; }
+  .tb-box:hover{ filter: brightness(1.08); }
+  .tb-box svg{ width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+  .tb-2l{ display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
+  .tb-2l small{ font-size: 11px; font-weight: 400; opacity: 0.95; white-space: nowrap; }
+  .tb-2l b{
+    font-size: 12.5px; font-weight: 500; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; max-width: 190px;
+  }
+  .tb-sino{ background: #892E65; position: relative; padding: 0 14px; }
+  .tb-badge{
+    background: #D15B47; color: #fff; font-size: 11px; font-weight: 700;
+    border-radius: 10px; padding: 1px 6px; line-height: 1.4;
+  }
+  .tb-badge[hidden]{ display: none; }
+  .tb-mes{ background: #2E6589; }
+  .tb-unidade{ background: #2E8965; }
+  .tb-user{ background: #62A8D1; }
+  .tb-instalar{ background: #E0902A; font-size: 12.5px; font-weight: 600; }
+  .tb-instalar[hidden]{ display: none; }
+  .tb-sair{ background: #B74635; font-size: 13px; padding: 0 16px; }
 
-  .brand-text .name{
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 20px;
-    letter-spacing: 0.3px;
-    line-height: 1.1;
-  }
-  .brand-text .subtitle{
-    font-size: 11.5px;
-    color: rgba(255,255,255,0.72);
-    letter-spacing: 0.4px;
-    margin-top: 2px;
-  }
-
-  .user-panel{
-    text-align: right;
-    line-height: 1.35;
-  }
-  .user-panel .who{
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    color: rgba(255,255,255,0.95);
-  }
-  .user-panel .who span{
-    color: var(--gold-soft);
-  }
-  .user-panel .clock{
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11.5px;
-    color: rgba(255,255,255,0.68);
-    letter-spacing: 0.3px;
-  }
-
-  /* ---------- NAV ---------- */
-  nav{
-    background: rgba(0,0,0,0.14);
-    padding: 0 20px;
-    overflow-x: auto;
-  }
-  .nav-inner{
+  /* ---------- MENU LATERAL ---------- */
+  .sidebar{
+    position: fixed;
+    top: var(--topbar-h); bottom: 0; left: 0;
+    width: var(--sidebar-w);
+    background: #F2F2F2;
+    border-right: 1px solid #CCCCCC;
+    z-index: 40;
     display: flex;
-    gap: 4px;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: width 0.2s ease, transform 0.2s ease;
   }
+  .sb-nav{ display: flex; flex-direction: column; }
   .nav-item{
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 11px 16px;
-    font-size: 13.5px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.75);
-    border-bottom: 2.5px solid transparent;
+    gap: 10px;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 400;
+    color: #585858;
+    background: #F9F9F9;
+    border-bottom: 1px solid #E5E5E5;
     cursor: pointer;
     white-space: nowrap;
-    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
     user-select: none;
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .nav-item svg{ width: 15px; height: 15px; opacity: 0.85; }
-  .nav-item:hover{
-    color: white;
-    background: rgba(255,255,255,0.06);
+  .nav-item svg{ width: 18px; height: 18px; fill: currentColor; color: #777; flex-shrink: 0; transition: color 0.15s ease; }
+  .nav-item:hover{ background: #fff; color: #2B7DBC; }
+  .nav-item:hover svg{ color: #2B7DBC; }
+  .nav-item.active{ background: #fff; color: #2B7DBC; font-weight: 600; }
+  .nav-item.active svg{ color: #2B7DBC; }
+  .nav-item.active::after{
+    content: "";
+    position: absolute;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    border-style: solid;
+    border-width: 12px 10px 12px 0;
+    border-color: transparent #2B7DBC transparent transparent;
   }
-  .nav-item.active{
-    color: white;
-    border-bottom-color: var(--gold);
+  .sb-collapse{
+    margin-top: 6px;
+    padding: 8px 0;
+    border-bottom: 1px solid #E5E5E5;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .sb-collapse::before{
+    content: ""; position: absolute; left: 8px; right: 8px; top: 50%;
+    height: 1px; background: #DADADA;
+  }
+  .sb-collapse button{
+    position: relative;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1px solid #C5C5C5; background: #F9F9F9; color: #999;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0;
+  }
+  .sb-collapse button:hover{ color: #2B7DBC; border-color: #2B7DBC; }
+  .sb-collapse svg{ width: 16px; height: 16px; fill: currentColor; transition: transform 0.2s ease; }
+
+  body.sb-collapsed .sidebar{ width: var(--sidebar-w-mini); }
+  body.sb-collapsed .nav-label{ display: none; }
+  body.sb-collapsed .nav-item{ justify-content: center; padding: 0; }
+  body.sb-collapsed .nav-item.active::after{ border-width: 10px 8px 10px 0; }
+  body.sb-collapsed .sb-collapse svg{ transform: rotate(180deg); }
+  body.sb-collapsed #appContent{ margin-left: var(--sidebar-w-mini); }
+  .sb-overlay{ display: none; }
+
+  /* ---------- ÁREA DE CONTEÚDO + TRILHA ---------- */
+  #appContent{
+    margin-left: var(--sidebar-w);
+    padding-top: var(--topbar-h);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    transition: margin-left 0.2s ease;
+  }
+  .breadcrumb-bar{
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    height: 41px;
+    padding: 0 16px;
+    background: #F5F5F5;
+    border-bottom: 1px solid #E5E5E5;
+    font-size: 13px;
+    color: #4A4A4A;
+    flex-shrink: 0;
+  }
+  .breadcrumb-bar .bc-trail{ display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .breadcrumb-bar svg{ width: 18px; height: 18px; fill: #555; flex-shrink: 0; }
+  .breadcrumb-bar .bc-sep{ color: #9A9A9A; }
+  .breadcrumb-bar .bc-atual{ color: #2B7DBC; font-weight: 500; }
+  .breadcrumb-bar .bc-info{ font-size: 11.5px; color: #7A7A7A; text-align: right; line-height: 1.3; flex-shrink: 0; }
+  .breadcrumb-bar .bc-info .ver{ opacity: 0.7; }
+
+  @media (max-width: 1000px){
+    .tb-unidade{ display: none; }
+  }
+  @media (max-width: 760px){
+    .menu-toggle{ display: flex; }
+    .topbar-brand{ font-size: 17px; padding: 0 10px 0 4px; }
+    .tb-sino, .tb-mes{ display: none; }
+    .tb-user .tb-2l small{ display: none; }
+    .tb-2l b{ max-width: 110px; }
+    .tb-sair{ padding: 0 12px; }
+    .sidebar{ width: 230px; transform: translateX(-100%); box-shadow: 2px 0 12px rgba(0,0,0,0.25); }
+    body.sb-aberto .sidebar{ transform: translateX(0); }
+    body.sb-collapsed .sidebar{ width: 230px; }
+    body.sb-collapsed .nav-label{ display: inline; }
+    body.sb-collapsed .nav-item{ justify-content: flex-start; padding: 0 12px; }
+    .sb-collapse{ display: none; }
+    #appContent, body.sb-collapsed #appContent{ margin-left: 0; }
+    .sb-overlay{
+      display: block; position: fixed; inset: var(--topbar-h) 0 0 0;
+      background: rgba(0,0,0,0.35); z-index: 35;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    body.sb-aberto .sb-overlay{ opacity: 1; pointer-events: auto; }
+    .breadcrumb-bar .bc-info .ver{ display: none; }
+  }
+  @media (max-width: 420px){
+    .tb-user{ display: none; }
   }
 
   /* ---------- MAIN ---------- */
   main{
-    max-width: 1080px;
+    width: 100%;
+    max-width: 1180px;
     margin: 0 auto;
-    padding: 56px 28px 80px;
+    padding: 28px 28px 40px;
+    flex: 1;
   }
 
   .welcome{
@@ -241,7 +333,7 @@
   }
   .card:hover{
     transform: translateY(-3px);
-    box-shadow: 0 14px 28px rgba(76,42,133,0.14);
+    box-shadow: 0 14px 28px rgba(46,101,137,0.16);
     border-color: transparent;
   }
   .card:hover::before{ transform: scaleX(1); }
@@ -296,14 +388,12 @@
     text-align: center;
     margin-top: 46px;
     font-size: 12px;
-    color: #B7AECF;
+    color: #9AA5AE;
   }
 
   @media (max-width: 640px){
-    .top-bar{ flex-wrap: wrap; }
-    .user-panel{ text-align: left; }
     .welcome{ flex-direction: column; }
-    main{ padding: 36px 18px 60px; }
+    main{ padding: 20px 14px 36px; }
   }
 
   /* ---------- VIEWS ---------- */
@@ -390,7 +480,7 @@
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    background: #FBFAFE;
+    background: #F9FBFD;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
   .field input:focus{
@@ -536,7 +626,7 @@
     line-height: 1.45;
     color: var(--ink);
     white-space: pre-wrap;
-    background: #FAFAFC;
+    background: #F9FBFD;
     min-height: 40px;
   }
   .obs-preview.vazio{
@@ -618,7 +708,7 @@
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    background: #FBFAFE;
+    background: #F9FBFD;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
   .field select:focus{
@@ -645,7 +735,7 @@
     font-size: 13.5px;
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    background: #FBFAFE;
+    background: #F9FBFD;
     resize: vertical;
     min-height: 70px;
     line-height: 1.5;
@@ -656,7 +746,7 @@
     background: white;
   }
   .field textarea[readonly]{
-    background: #F3F1F8;
+    background: #F1F4F7;
     color: var(--ink-soft);
     cursor: not-allowed;
   }
@@ -947,7 +1037,7 @@
     border-radius: 6px;
     padding: 3px 6px;
     font-size: 12px;
-    background: #FBFAFE;
+    background: #F9FBFD;
   }
 
   .parecer-menu-grid{
@@ -971,7 +1061,7 @@
   }
   .parecer-menu-card:hover{
     transform: translateY(-3px);
-    box-shadow: 0 14px 28px rgba(76,42,133,0.14);
+    box-shadow: 0 14px 28px rgba(46,101,137,0.16);
   }
   .parecer-menu-card .card-icon{
     width: 52px; height: 52px;
@@ -988,9 +1078,10 @@
   .app-copyright{
     text-align: center;
     font-size: 11.5px;
-    color: #B7AECF;
+    color: #9AA5AE;
     padding: 18px 20px 26px;
     letter-spacing: 0.3px;
+    margin-top: auto;
   }
 
   .empty-state{
@@ -1002,109 +1093,148 @@
   /* ---------- TELA DE LOGIN ---------- */
   #loginGate{
     position: fixed; inset: 0; z-index: 1000;
+    display: flex; flex-direction: column;
+    background: #F5F5F5;
+    overflow-y: auto;
+  }
+  .login-top{
+    height: var(--topbar-h); flex-shrink: 0;
+    background: #438EB9; color: #fff;
+    display: flex; align-items: center;
+    padding: 0 24px;
+    font-size: 26px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .login-wrap{
+    flex: 1;
     display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-    background: linear-gradient(135deg, var(--purple-deep), var(--purple) 55%, var(--purple-light));
+    padding: 24px 16px;
   }
   .login-card{
-    background: white; border-radius: 16px;
-    padding: 32px 30px 26px; width: 100%; max-width: 380px;
-    display: flex; flex-direction: column; gap: 14px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    background: #fff;
+    width: 100%; max-width: 376px;
+    padding: 20px 20px 18px;
+    display: flex; flex-direction: column; gap: 10px;
+    border-radius: 2px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
   }
-  .login-card .brand-seal{ margin: 0 auto; }
   .login-card h2{
-    font-family: 'Fraunces', serif; font-size: 22px; margin: 0;
-    color: var(--purple-deep); text-align: center;
+    margin: 0 0 6px;
+    font-size: 26px; font-weight: 400;
+    color: #438EB9; text-align: center;
   }
-  .login-card p{ margin: 0; font-size: 13px; color: var(--ink-soft); text-align: center; }
-  .login-card label{
-    display: flex; flex-direction: column; gap: 6px;
-    font-size: 12px; font-weight: 600; color: var(--ink-soft);
+  .login-card p{ margin: 0; font-size: 12.5px; color: var(--ink-soft); text-align: center; }
+  .login-card label.rotulo{
+    display: flex; flex-direction: column; gap: 4px;
+    font-size: 13px; font-weight: 400; color: #333;
   }
-  .login-card input{
-    border: 1.5px solid var(--line); border-radius: 9px;
-    padding: 10px 12px; font-size: 14px; font-family: 'Inter', sans-serif; color: var(--ink);
+  .campo-ico{ position: relative; }
+  .campo-ico input{
+    width: 100%;
+    border: 1px solid #D5D5D5; border-radius: 2px;
+    padding: 8px 32px 8px 8px;
+    font-size: 14px; font-family: 'Inter', sans-serif; color: #333;
+    background: #fff;
   }
-  .login-card input:focus{ outline: none; border-color: var(--purple-light); }
-  .login-card .link-btn{ align-self: center; }
+  .campo-ico input:focus{ outline: none; border-color: #6FB3E0; }
+  .campo-ico svg{
+    position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 14px; fill: #888; pointer-events: none;
+  }
+  .login-card label.lembrar{
+    display: flex; flex-direction: row; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 400; color: #333; cursor: pointer;
+  }
+  .login-card label.lembrar input{ width: 14px; height: 14px; margin: 0; accent-color: #438EB9; }
+  .login-card .btn-primary{
+    margin-top: 14px;
+    width: 100%;
+    border-radius: 2px;
+    padding: 10px 12px;
+    font-size: 13px; font-weight: 500;
+    background: #438EB9;
+  }
+  .login-card .btn-primary:hover{ background: #2E6589; }
+  .login-card .link-btn{
+    align-self: flex-end;
+    margin-top: 12px;
+    font-size: 13px; color: #337AB7; text-decoration: none;
+  }
+  .login-card .link-btn:hover{ text-decoration: underline; }
+  .login-card .link-btn.instalar{ align-self: center; margin-top: 2px; }
   .login-card .save-status{ text-align: center; min-height: 16px; }
+  .login-footer{ margin-top: 0; padding-top: 10px; flex-shrink: 0; }
+  @media (max-width: 760px){
+    .login-top{ font-size: 18px; padding: 0 14px; }
+  }
   .link-btn[hidden]{ display: none !important; }
 </style>
 </head>
 <body>
 
 <div id="loginGate">
-  <form id="loginForm" class="login-card">
-    <div class="brand-seal">SCF</div>
-    <h2>Sistema Conselho Fiscal</h2>
-    <p id="loginAviso">Entre com seu e-mail e senha.</p>
-    <label>E-mail
-      <input type="email" id="login-email" autocomplete="username" required>
-    </label>
-    <label>Senha
-      <input type="password" id="login-senha" autocomplete="current-password" required>
-    </label>
-    <button type="submit" class="btn-primary" id="btnEntrar">Entrar</button>
-    <button type="button" class="link-btn" id="btnEsqueci">Esqueci a senha</button>
-    <button type="button" class="link-btn" id="btnInstalarLogin" hidden>Instalar aplicativo no celular</button>
-    <span class="save-status" id="loginStatus"></span>
-  </form>
+  <div class="login-top">SCF - ARTUR NOGUEIRA</div>
+  <div class="login-wrap">
+    <form id="loginForm" class="login-card">
+      <h2>Acesso</h2>
+      <p id="loginAviso">Entre com seu e-mail e senha.</p>
+      <label class="rotulo">E-mail:
+        <span class="campo-ico">
+          <input type="email" id="login-email" autocomplete="username" required>
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </span>
+      </label>
+      <label class="rotulo">Senha:
+        <span class="campo-ico">
+          <input type="password" id="login-senha" autocomplete="current-password" required>
+          <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+        </span>
+      </label>
+      <label class="lembrar"><input type="checkbox" id="login-lembrar"> Lembrar meu e-mail</label>
+      <button type="submit" class="btn-primary" id="btnEntrar">Entrar</button>
+      <button type="button" class="link-btn" id="btnEsqueci">Esqueceu a senha?</button>
+      <button type="button" class="link-btn instalar" id="btnInstalarLogin" hidden>Instalar aplicativo no celular</button>
+      <span class="save-status" id="loginStatus"></span>
+    </form>
+  </div>
+  <footer class="app-copyright login-footer">© RRM · 2026 · Sistema Conselho Fiscal</footer>
 </div>
 
-<header>
-  <div class="top-bar">
-    <div class="brand">
-      <div class="brand-seal">SCF</div>
-      <div class="brand-text">
-        <div class="name">SCF</div>
-        <div class="subtitle">Sistema Conselho Fiscal</div>
-      </div>
-    </div>
-    <div class="user-panel">
-      <div class="who">ADM · <span id="userLocation">ARTUR NOGUEIRA — SP</span></div>
-      <div class="clock" id="clock">carregando...</div>
-      <div class="clock" style="opacity:0.55;">versão 2026-10-14-online</div>
-      <div class="clock"><span id="userEmail"></span> <button type="button" class="link-btn" id="btnSair" style="color:rgba(255,255,255,0.85);">sair</button> <button type="button" class="link-btn" id="btnInstalarTopo" style="color:rgba(255,255,255,0.85);" hidden>instalar app</button></div>
-    </div>
+<header class="topbar">
+  <div class="topbar-left">
+    <button type="button" class="menu-toggle" id="btnMenuMobile" aria-label="Abrir menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></button>
+    <div class="topbar-brand">SCF - ARTUR NOGUEIRA</div>
   </div>
-  <nav>
-    <div class="nav-inner">
-      <div class="nav-item active" data-target="painel">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-        Painel
-      </div>
-      <div class="nav-item" data-target="distribuidora">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
-        Distribuidora
-      </div>
-      <div class="nav-item" data-target="tesouraria">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
-        Tesouraria
-      </div>
-      <div class="nav-item" data-target="piedade">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
-        Piedade
-      </div>
-      <div class="nav-item" data-target="contabilidade">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v3h6V3M8 11h8M8 15h5"/></svg>
-        Contabilidade
-      </div>
-      <div class="nav-item" data-target="parecer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 17h5"/></svg>
-        Parecer
-      </div>
-      <div class="nav-item" data-target="compras">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M6 2v20"/><path d="M12 10h4M12 14h4"/></svg>
-        Compras
-      </div>
-      <div class="nav-item" data-target="secretaria">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 13h6M9 17h6"/></svg>
-        Secretaria
-      </div>
-    </div>
-  </nav>
+  <div class="topbar-right">
+    <div class="tb-box tb-sino" title="Notificações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><span class="tb-badge" id="sinoContador" hidden>0</span></div>
+    <div class="tb-box tb-mes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg><div class="tb-2l"><small>Mês de Trabalho</small><b id="mesTrabalho">--/----</b></div></div>
+    <div class="tb-box tb-unidade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg><div class="tb-2l"><small>ARTUR NOGUEIRA</small><b id="userLocation">ADM - ARTUR NOGUEIRA - SP</b></div></div>
+    <div class="tb-box tb-user"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><div class="tb-2l"><small>Bem-vindo,</small><b id="userEmail"></b></div></div>
+    <button type="button" class="tb-box tb-instalar" id="btnInstalarTopo" hidden>Instalar app</button>
+    <button type="button" class="tb-box tb-sair" id="btnSair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>Sair</button>
+  </div>
 </header>
+
+<aside class="sidebar" id="sidebar">
+  <nav class="sb-nav">
+      <div class="nav-item active" data-target="painel" title="Área de Trabalho"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="nav-label">Área de Trabalho</span></div>
+      <div class="nav-item" data-target="distribuidora" title="Distribuidora"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg><span class="nav-label">Distribuidora</span></div>
+      <div class="nav-item" data-target="tesouraria" title="Tesouraria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14V6c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-9-1c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-6v11c0 1.1-.9 2-2 2H4v-2h17V7h2z"/></svg><span class="nav-label">Tesouraria</span></div>
+      <div class="nav-item" data-target="piedade" title="Piedade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg><span class="nav-label">Piedade</span></div>
+      <div class="nav-item" data-target="contabilidade" title="Contabilidade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg><span class="nav-label">Contabilidade</span></div>
+      <div class="nav-item" data-target="parecer" title="Parecer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg><span class="nav-label">Parecer</span></div>
+      <div class="nav-item" data-target="compras" title="Compras"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span class="nav-label">Compras</span></div>
+      <div class="nav-item" data-target="secretaria" title="Secretaria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg><span class="nav-label">Secretaria</span></div>
+  </nav>
+  <div class="sb-collapse"><button type="button" id="btnRecolher" aria-label="Recolher ou expandir o menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div>
+</aside>
+<div class="sb-overlay" id="sbOverlay"></div>
+
+<div id="appContent">
+  <div class="breadcrumb-bar">
+    <div class="bc-trail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span id="breadcrumbTrilha"><span class="bc-atual">Área de Trabalho</span></span></div>
+    <div class="bc-info"><div id="clock">carregando...</div><div class="ver">versão 2026-11-03-layout-azul</div></div>
+  </div>
 
 <main>
 
@@ -1122,7 +1252,7 @@
     </div>
 
     <div class="grid">
-      <div class="card" data-view="distribuidora" style="--card-accent:#4C2A85; --card-accent-pale:#EFEAFB;">
+      <div class="card" data-view="distribuidora" style="--card-accent:#438EB9; --card-accent-pale:#E6F1F8;">
         <div class="card-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
         </div>
@@ -1205,18 +1335,18 @@
       </div>
     </div>
 
-    <footer class="hint">Explore as abas acima também, se preferir.</footer>
+    <footer class="hint">Explore o menu ao lado também, se preferir.</footer>
   </div>
 
   <!-- ===== VIEW: DISTRIBUIDORA ===== -->
   <div class="view" id="view-distribuidora">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar ao painel
+      Voltar à Área de Trabalho
     </div>
 
     <div class="module-header">
-      <div class="card-icon" style="--card-accent:#4C2A85; --card-accent-pale:#EFEAFB; background:var(--card-accent-pale); color:var(--card-accent);">
+      <div class="card-icon" style="--card-accent:#438EB9; --card-accent-pale:#E6F1F8; background:var(--card-accent-pale); color:var(--card-accent);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
       </div>
       <div>
@@ -1326,7 +1456,7 @@
   <div class="view" id="view-tesouraria">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar ao painel
+      Voltar à Área de Trabalho
     </div>
 
     <div class="module-header">
@@ -1415,7 +1545,7 @@
   <div class="view" id="view-piedade">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar ao painel
+      Voltar à Área de Trabalho
     </div>
 
     <div class="module-header">
@@ -1504,7 +1634,7 @@
   <div class="view" id="view-contabilidade">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar ao painel
+      Voltar à Área de Trabalho
     </div>
 
     <div class="module-header">
@@ -1582,7 +1712,7 @@
           </div>
         </div>
 
-        <div id="revisaoPosicaoAtivo" style="display:none; margin:10px 0 18px; padding:14px; border:1.5px solid var(--purple-pale, #ddd); border-radius:10px; background:#FAFAFC;">
+        <div id="revisaoPosicaoAtivo" style="display:none; margin:10px 0 18px; padding:14px; border:1.5px solid var(--purple-pale, #ddd); border-radius:10px; background:#F9FBFD;">
           <p style="font-size:13px; margin:0 0 10px; font-weight:600;">Conferência de saldos — Posição Ativo (lido por OCR) x Balancete</p>
           <p style="font-size:12px; color:var(--ink-soft); margin:0 0 10px;">
             A leitura da Posição Ativo é automática (OCR), pode vir com erro de dígito. Confira os valores abaixo — pode corrigir direto no campo antes de confirmar.
@@ -1663,7 +1793,7 @@
   <div class="view" id="view-secretaria">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar ao painel
+      Voltar à Área de Trabalho
     </div>
 
     <div class="module-header">
@@ -1706,7 +1836,7 @@
   <div class="view" id="view-parecer">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar ao painel
+      Voltar à Área de Trabalho
     </div>
 
     <div class="module-header">
@@ -1814,7 +1944,7 @@
   <div class="view" id="view-compras">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar ao painel
+      Voltar à Área de Trabalho
     </div>
 
     <div class="module-header">
@@ -1923,6 +2053,7 @@
 </main>
 
 <footer class="app-copyright">© RRM · 2026 · Sistema Conselho Fiscal</footer>
+</div><!-- /#appContent -->
 
 <!-- Folha de impressão (oculta na tela, visível só ao imprimir) -->
 <div id="printSheet"></div>
@@ -1936,6 +2067,8 @@
     const dataStr = `${dias[now.getDay()]}, ${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
     const horaStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     document.getElementById('clock').textContent = `${dataStr} · ${horaStr}`;
+    const elMes = document.getElementById('mesTrabalho');
+    if(elMes) elMes.textContent = `${pad(now.getMonth()+1)}/${now.getFullYear()}`;
     document.getElementById('stampDate').textContent = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
   }
   updateClock();
@@ -1943,6 +2076,37 @@
 
   /* ---------- NAVEGAÇÃO ENTRE TELAS ---------- */
   const VIEWS_VALIDAS = ['painel', 'distribuidora', 'tesouraria', 'piedade', 'contabilidade', 'secretaria', 'parecer', 'compras'];
+
+  const NOMES_VIEW = {
+    painel: 'Área de Trabalho', distribuidora: 'Distribuidora', tesouraria: 'Tesouraria',
+    piedade: 'Piedade', contabilidade: 'Contabilidade', parecer: 'Parecer',
+    compras: 'Compras', secretaria: 'Secretaria'
+  };
+
+  function atualizarTrilha(name){
+    const el = document.getElementById('breadcrumbTrilha');
+    if(!el) return;
+    const nome = NOMES_VIEW[name] || 'Área de Trabalho';
+    el.innerHTML = name === 'painel'
+      ? '<span class="bc-atual">Área de Trabalho</span>'
+      : 'Área de Trabalho <span class="bc-sep">›</span> <span class="bc-atual">' + nome + '</span>';
+  }
+
+  /* ---------- MENU LATERAL: recolher (computador) e abrir/fechar (celular) ---------- */
+  function fecharMenuMobile(){ document.body.classList.remove('sb-aberto'); }
+
+  (function(){
+    try { if(localStorage.getItem('scf_menu_recolhido') === '1') document.body.classList.add('sb-collapsed'); } catch(e){}
+    const btnRecolher = document.getElementById('btnRecolher');
+    if(btnRecolher) btnRecolher.addEventListener('click', ()=>{
+      const recolhido = document.body.classList.toggle('sb-collapsed');
+      try { localStorage.setItem('scf_menu_recolhido', recolhido ? '1' : '0'); } catch(e){}
+    });
+    const btnMobile = document.getElementById('btnMenuMobile');
+    if(btnMobile) btnMobile.addEventListener('click', ()=>document.body.classList.toggle('sb-aberto'));
+    const overlay = document.getElementById('sbOverlay');
+    if(overlay) overlay.addEventListener('click', fecharMenuMobile);
+  })();
 
   function switchView(name){
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -1952,6 +2116,9 @@
     document.querySelectorAll('.nav-item').forEach(i=>{
       i.classList.toggle('active', i.dataset.target === name);
     });
+    atualizarTrilha(name);
+    fecharMenuMobile();
+    window.scrollTo(0, 0);
 
     if(MODULOS[name]) recarregarTabela(MODULOS[name]);
     if(OBS_MODULOS[name]) recarregarObservacoes(OBS_MODULOS[name]);
@@ -4551,6 +4718,23 @@
       navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker não registrado:', err));
     });
   }
+
+  /* ---------- LEMBRAR MEU E-MAIL (tela de login) ---------- */
+  (function(){
+    const campoEmail = document.getElementById('login-email');
+    const caixa = document.getElementById('login-lembrar');
+    if(!campoEmail || !caixa) return;
+    try {
+      const guardado = localStorage.getItem('scf_email_lembrado');
+      if(guardado){ campoEmail.value = guardado; caixa.checked = true; }
+    } catch(e){}
+    document.getElementById('loginForm').addEventListener('submit', ()=>{
+      try {
+        if(caixa.checked) localStorage.setItem('scf_email_lembrado', campoEmail.value.trim());
+        else localStorage.removeItem('scf_email_lembrado');
+      } catch(e){}
+    });
+  })();
 
   ligarImportacaoJson();
   iniciarFirebase();
