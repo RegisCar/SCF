@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#438EB9">
+<meta name="theme-color" content="#438EB8">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SCF">
@@ -24,21 +24,19 @@
 <script src="firebase-config.js"></script>
 <style>
   :root{
-    /* Os nomes --purple* vieram do visual antigo; agora guardam a paleta azul. */
-    --purple-deep: #2E6589;
-    --purple: #438EB9;
-    --purple-light: #62A8D1;
-    --purple-pale: #E6F1F8;
-    --lavender-bg: #F5F5F5;
-    --gold: #E0902A;
-    --gold-soft: #FFE2B0;
-    --ink: #2F3A45;
+    --purple-deep: #2F648C;
+    --purple: #438EB8;
+    --purple-light: #5BA3CF;
+    --purple-pale: #E8F2F9;
+    --lavender-bg: #F4F4F4;
+    --gold: #C79A3B;
+    --gold-soft: #F1E4C4;
+    --ink: #26323D;
     --ink-soft: #66727E;
     --white: #FFFFFF;
-    --line: #DCE5EC;
-    --topbar-h: 45px;
-    --sidebar-w: 200px;
-    --sidebar-w-mini: 44px;
+    --line: #DDE3EA;
+    --barra: #438EB8;
+    --altura-barra: 46px;
   }
 
   * { box-sizing: border-box; }
@@ -50,198 +48,165 @@
     min-height: 100vh;
   }
 
-  /* ---------- BARRA SUPERIOR ---------- */
-  header.topbar{
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: var(--topbar-h);
-    background: #438EB9;
+  /* ---------- BARRA DO TOPO ---------- */
+  .app-top{
+    position: sticky; top: 0; z-index: 50;
+    height: var(--altura-barra);
+    background: var(--barra);
     color: #fff;
-    display: flex;
-    align-items: stretch;
-    justify-content: space-between;
-    z-index: 50;
+    display: flex; align-items: stretch; justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
   }
-  .topbar-left{ display: flex; align-items: center; min-width: 0; }
-  .menu-toggle{
+  .app-top .hamb{
     display: none;
-    background: none; border: none; color: #fff;
-    width: 44px; height: 100%;
-    cursor: pointer; align-items: center; justify-content: center;
+    background: transparent; border: 0; color: #fff; cursor: pointer;
+    padding: 0 14px;
   }
-  .menu-toggle svg{ width: 24px; height: 24px; fill: currentColor; }
-  .topbar-brand{
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0;
-    padding: 0 22px 0 24px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .topbar-right{ display: flex; align-items: stretch; }
-  .tb-box{
-    display: flex; align-items: center; gap: 8px;
-    padding: 0 12px;
-    color: #fff;
-    border: none;
-    font-family: inherit;
-    font-size: 13px;
-    cursor: default;
-    transition: filter 0.15s ease;
+  .app-top .hamb svg{ width: 24px; height: 24px; }
+  .app-title{
+    display: flex; align-items: center;
+    padding: 0 18px;
+    font-size: 21px; font-weight: 700; letter-spacing: 0.2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     min-width: 0;
   }
-  button.tb-box{ cursor: pointer; }
-  .tb-box:hover{ filter: brightness(1.08); }
-  .tb-box svg{ width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
-  .tb-2l{ display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
-  .tb-2l small{ font-size: 11px; font-weight: 400; opacity: 0.95; white-space: nowrap; }
-  .tb-2l b{
-    font-size: 12.5px; font-weight: 500; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis; max-width: 190px;
+  .top-right{ display: flex; align-items: stretch; }
+  .tb{
+    position: relative;
+    display: flex; align-items: center; gap: 9px;
+    padding: 0 14px;
+    color: #fff; border: 0; font-family: inherit; cursor: default;
+    white-space: nowrap;
   }
-  .tb-sino{ background: #892E65; position: relative; padding: 0 14px; }
-  .tb-badge{
-    background: #D15B47; color: #fff; font-size: 11px; font-weight: 700;
-    border-radius: 10px; padding: 1px 6px; line-height: 1.4;
+  .tb svg{ width: 17px; height: 17px; flex: 0 0 17px; }
+  .tb .tb-t{ display: flex; flex-direction: column; line-height: 1.15; text-align: left; }
+  .tb .tb-t small{ font-size: 10.5px; opacity: 0.9; }
+  .tb .tb-t b{ font-size: 12.5px; font-weight: 600; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+  button.tb{ cursor: pointer; }
+  .tb-bell{ background: #8A2D64; padding: 0; }
+  .tb-bell > button{
+    display: flex; align-items: center; gap: 7px; height: 100%;
+    background: transparent; border: 0; color: #fff; cursor: pointer; padding: 0 14px;
   }
-  .tb-badge[hidden]{ display: none; }
-  .tb-mes{ background: #2E6589; }
-  .tb-unidade{ background: #2E8965; }
-  .tb-user{ background: #62A8D1; }
-  .tb-instalar{ background: #E0902A; font-size: 12.5px; font-weight: 600; }
-  .tb-instalar[hidden]{ display: none; }
-  .tb-sair{ background: #B74635; font-size: 13px; padding: 0 16px; }
+  .tb-bell .badge{
+    background: #E8553C; border-radius: 10px; font-size: 11px; font-weight: 700;
+    padding: 1px 7px; line-height: 1.3;
+  }
+  .tb-mes{ background: #2F648C; }
+  .tb-un{ background: #2E8A63; }
+  .tb-user{ background: #63A7D4; padding: 0; }
+  .tb-user > button{
+    display: flex; align-items: center; gap: 9px; height: 100%;
+    background: transparent; border: 0; color: #fff; cursor: pointer; padding: 0 14px; font-family: inherit;
+  }
+  .tb-user .chev{ width: 12px; height: 12px; flex: 0 0 12px; }
+  .tb-sair{ background: #B94637; font-size: 12.5px; font-weight: 600; }
+  .tb-sair:hover{ background: #a63b2e; }
+  .tb-bell:hover, .tb-user:hover{ filter: brightness(1.08); }
+
+  .dropdown{
+    display: none;
+    position: absolute; right: 0; top: 100%;
+    min-width: 250px; max-width: 92vw;
+    background: #fff; color: var(--ink);
+    border: 1px solid var(--line); border-top: 0;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+    font-size: 13px; z-index: 60; text-align: left;
+  }
+  .dropdown.open{ display: block; }
+  .dd-title{ padding: 11px 14px; font-weight: 700; border-bottom: 1px solid var(--line); }
+  .dd-empty{ padding: 14px; color: var(--ink-soft); }
+  .dd-line{ padding: 11px 14px; border-bottom: 1px solid var(--line); color: var(--ink-soft); font-size: 12px; }
+  .dd-item{
+    display: block; width: 100%; text-align: left;
+    padding: 11px 14px; background: #fff; border: 0; border-bottom: 1px solid var(--line);
+    font-family: inherit; font-size: 13px; color: var(--purple-deep); font-weight: 600; cursor: pointer;
+  }
+  .dd-item:hover{ background: var(--purple-pale); }
+  .dd-item[hidden]{ display: none; }
+  .dd-ver{ padding: 9px 14px; color: #9AA5B1; font-size: 11px; }
+
+  .info-mobile{
+    display: none;
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 7px 14px; font-size: 12px; color: var(--ink-soft);
+  }
+  .info-mobile b{ color: var(--purple-deep); }
 
   /* ---------- MENU LATERAL ---------- */
+  .app-shell{ display: flex; align-items: stretch; min-height: calc(100vh - var(--altura-barra)); }
   .sidebar{
-    position: fixed;
-    top: var(--topbar-h); bottom: 0; left: 0;
-    width: var(--sidebar-w);
-    background: #F2F2F2;
-    border-right: 1px solid #CCCCCC;
-    z-index: 40;
-    display: flex;
-    flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: auto;
-    transition: width 0.2s ease, transform 0.2s ease;
+    flex: 0 0 232px; width: 232px;
+    background: #F2F2F2; border-right: 1px solid #DADADA;
+    position: sticky; top: var(--altura-barra); align-self: flex-start;
+    height: calc(100vh - var(--altura-barra)); overflow-y: auto;
+    display: flex; flex-direction: column;
+    transition: width 0.15s ease, flex-basis 0.15s ease;
   }
-  .sb-nav{ display: flex; flex-direction: column; }
   .nav-item{
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 40px;
-    padding: 0 12px;
-    font-size: 13px;
-    font-weight: 400;
-    color: #585858;
-    background: #F9F9F9;
-    border-bottom: 1px solid #E5E5E5;
-    cursor: pointer;
-    white-space: nowrap;
-    user-select: none;
-    transition: background 0.15s ease, color 0.15s ease;
+    display: flex; align-items: center; gap: 12px;
+    height: 46px; padding: 0 16px;
+    border-bottom: 1px solid #E4E4E4;
+    color: #444; font-size: 14px; font-weight: 500;
+    cursor: pointer; user-select: none; white-space: nowrap;
   }
-  .nav-item svg{ width: 18px; height: 18px; fill: currentColor; color: #777; flex-shrink: 0; transition: color 0.15s ease; }
-  .nav-item:hover{ background: #fff; color: #2B7DBC; }
-  .nav-item:hover svg{ color: #2B7DBC; }
-  .nav-item.active{ background: #fff; color: #2B7DBC; font-weight: 600; }
-  .nav-item.active svg{ color: #2B7DBC; }
+  .nav-item svg{ width: 18px; height: 18px; flex: 0 0 18px; color: #6B6B6B; }
+  .nav-item:hover{ background: #E9E9E9; }
+  .nav-item.active{ background: #fff; color: #2F7DB8; font-weight: 600; }
+  .nav-item.active svg{ color: #2F7DB8; }
   .nav-item.active::after{
-    content: "";
-    position: absolute;
-    right: 0; top: 50%;
-    transform: translateY(-50%);
-    border-style: solid;
-    border-width: 12px 10px 12px 0;
-    border-color: transparent #2B7DBC transparent transparent;
+    content: ''; position: absolute; right: 0; top: 50%; margin-top: -8px;
+    border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-right: 8px solid #3184C6;
   }
-  .sb-collapse{
-    margin-top: 6px;
-    padding: 8px 0;
-    border-bottom: 1px solid #E5E5E5;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
+  .side-fim{ margin-top: auto; padding: 14px 0; display: flex; justify-content: center; border-top: 1px solid #E4E4E4; }
+  .btn-recolher{
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid #BDBDBD; background: #fff;
+    color: #777; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
   }
-  .sb-collapse::before{
-    content: ""; position: absolute; left: 8px; right: 8px; top: 50%;
-    height: 1px; background: #DADADA;
-  }
-  .sb-collapse button{
-    position: relative;
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 1px solid #C5C5C5; background: #F9F9F9; color: #999;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; padding: 0;
-  }
-  .sb-collapse button:hover{ color: #2B7DBC; border-color: #2B7DBC; }
-  .sb-collapse svg{ width: 16px; height: 16px; fill: currentColor; transition: transform 0.2s ease; }
+  .btn-recolher svg{ width: 12px; height: 12px; }
+  .sidebar-overlay{ display: none; }
 
-  body.sb-collapsed .sidebar{ width: var(--sidebar-w-mini); }
-  body.sb-collapsed .nav-label{ display: none; }
-  body.sb-collapsed .nav-item{ justify-content: center; padding: 0; }
-  body.sb-collapsed .nav-item.active::after{ border-width: 10px 8px 10px 0; }
-  body.sb-collapsed .sb-collapse svg{ transform: rotate(180deg); }
-  body.sb-collapsed #appContent{ margin-left: var(--sidebar-w-mini); }
-  .sb-overlay{ display: none; }
+  .app-content{ flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; background: var(--lavender-bg); }
+  .crumb{
+    background: #F5F5F3; border-bottom: 1px solid #E6E6E6;
+    padding: 10px 18px; font-size: 13px; color: #555;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .crumb a{ display: inline-flex; align-items: center; gap: 6px; color: #444; cursor: pointer; }
+  .crumb a svg{ width: 14px; height: 14px; color: #2F7DB8; }
+  .crumb [hidden]{ display: none; }
 
-  /* ---------- ÁREA DE CONTEÚDO + TRILHA ---------- */
-  #appContent{
-    margin-left: var(--sidebar-w);
-    padding-top: var(--topbar-h);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    transition: margin-left 0.2s ease;
+  @media (min-width: 901px){
+    .sidebar.collapsed{ flex-basis: 56px; width: 56px; }
+    .sidebar.collapsed .nav-item{ padding: 0; justify-content: center; }
+    .sidebar.collapsed .nav-item .lbl{ display: none; }
+    .sidebar.collapsed .btn-recolher svg{ transform: rotate(180deg); }
   }
-  .breadcrumb-bar{
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    height: 41px;
-    padding: 0 16px;
-    background: #F5F5F5;
-    border-bottom: 1px solid #E5E5E5;
-    font-size: 13px;
-    color: #4A4A4A;
-    flex-shrink: 0;
-  }
-  .breadcrumb-bar .bc-trail{ display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .breadcrumb-bar svg{ width: 18px; height: 18px; fill: #555; flex-shrink: 0; }
-  .breadcrumb-bar .bc-sep{ color: #9A9A9A; }
-  .breadcrumb-bar .bc-atual{ color: #2B7DBC; font-weight: 500; }
-  .breadcrumb-bar .bc-info{ font-size: 11.5px; color: #7A7A7A; text-align: right; line-height: 1.3; flex-shrink: 0; }
-  .breadcrumb-bar .bc-info .ver{ opacity: 0.7; }
-
-  @media (max-width: 1000px){
-    .tb-unidade{ display: none; }
-  }
-  @media (max-width: 760px){
-    .menu-toggle{ display: flex; }
-    .topbar-brand{ font-size: 17px; padding: 0 10px 0 4px; }
-    .tb-sino, .tb-mes{ display: none; }
-    .tb-user .tb-2l small{ display: none; }
-    .tb-2l b{ max-width: 110px; }
-    .tb-sair{ padding: 0 12px; }
-    .sidebar{ width: 230px; transform: translateX(-100%); box-shadow: 2px 0 12px rgba(0,0,0,0.25); }
-    body.sb-aberto .sidebar{ transform: translateX(0); }
-    body.sb-collapsed .sidebar{ width: 230px; }
-    body.sb-collapsed .nav-label{ display: inline; }
-    body.sb-collapsed .nav-item{ justify-content: flex-start; padding: 0 12px; }
-    .sb-collapse{ display: none; }
-    #appContent, body.sb-collapsed #appContent{ margin-left: 0; }
-    .sb-overlay{
-      display: block; position: fixed; inset: var(--topbar-h) 0 0 0;
-      background: rgba(0,0,0,0.35); z-index: 35;
-      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+  @media (max-width: 900px){
+    .app-top .hamb{ display: flex; align-items: center; }
+    .app-title{ padding: 0 6px; font-size: 15px; flex: 1 1 auto; letter-spacing: 0; }
+    @media (max-width: 380px){ .app-title{ font-size: 13.5px; } }
+    .tb-mes, .tb-un{ display: none; }
+    .tb-user .tb-t, .tb-user .chev{ display: none; }
+    .tb-user > button{ padding: 0 12px; }
+    .tb-bell > button{ padding: 0 12px; }
+    .tb-sair{ padding: 0 12px; font-size: 0; gap: 0; }
+    .tb-sair svg{ width: 18px; height: 18px; }
+    .info-mobile{ display: block; }
+    .sidebar{
+      position: fixed; left: 0; top: var(--altura-barra); bottom: 0; height: auto;
+      z-index: 40; transform: translateX(-100%); transition: transform 0.2s ease;
+      box-shadow: none;
     }
-    body.sb-aberto .sb-overlay{ opacity: 1; pointer-events: auto; }
-    .breadcrumb-bar .bc-info .ver{ display: none; }
-  }
-  @media (max-width: 420px){
-    .tb-user{ display: none; }
+    body.menu-open .sidebar{ transform: none; box-shadow: 2px 0 14px rgba(0,0,0,0.25); }
+    .app-shell{ min-height: calc(100vh - var(--altura-barra) - 31px); min-height: calc(100dvh - var(--altura-barra) - 31px); }
+    body.menu-open .sidebar-overlay{
+      display: block; position: fixed; left: 0; right: 0; bottom: 0; top: var(--altura-barra);
+      background: rgba(0,0,0,0.35); z-index: 35;
+    }
+    .side-fim{ display: none; }
+    .dropdown{ position: fixed; right: 6px; top: var(--altura-barra); }
   }
 
   /* ---------- MAIN ---------- */
@@ -250,7 +215,6 @@
     max-width: 1180px;
     margin: 0 auto;
     padding: 28px 28px 40px;
-    flex: 1;
   }
 
   .welcome{
@@ -333,7 +297,7 @@
   }
   .card:hover{
     transform: translateY(-3px);
-    box-shadow: 0 14px 28px rgba(46,101,137,0.16);
+    box-shadow: 0 14px 28px rgba(67,142,184,0.14);
     border-color: transparent;
   }
   .card:hover::before{ transform: scaleX(1); }
@@ -388,12 +352,33 @@
     text-align: center;
     margin-top: 46px;
     font-size: 12px;
-    color: #9AA5AE;
+    color: #B7AECF;
   }
 
   @media (max-width: 640px){
-    .welcome{ flex-direction: column; }
-    main{ padding: 20px 14px 36px; }
+    .welcome{ flex-direction: column; margin-bottom: 16px; gap: 4px; }
+    main{ padding: 14px 12px 12px; }
+    .welcome h1{ font-size: 21px; }
+    .welcome p{ font-size: 13px; }
+    .stamp{ display: none; }
+    #view-painel .grid{ grid-template-columns: 1fr 1fr; gap: 10px; }
+    #view-painel .card{ padding: 16px 8px 14px; gap: 9px; border-radius: 12px; }
+    #view-painel .card .desc{ display: none; }
+    #view-painel .card .title{ font-size: 14px; }
+    #view-painel .card-icon{ width: 46px; height: 46px; }
+    #view-painel .card:last-child{ grid-column: 1 / -1; flex-direction: row; justify-content: center; padding: 14px 8px; }
+    .app-copyright{ padding: 12px 16px 18px; }
+  }
+  @media (max-width: 640px) and (max-height: 720px){
+    .welcome p{ display: none; }
+    .welcome h1{ font-size: 18px; }
+    #view-painel .grid{ gap: 8px; }
+    #view-painel .card{ padding: 10px 6px 9px; gap: 6px; }
+    #view-painel .card-icon{ width: 38px; height: 38px; }
+    #view-painel .card-icon svg{ width: 20px; height: 20px; }
+    #view-painel .card:last-child{ padding: 9px 6px; }
+    main{ padding-top: 10px; }
+    .welcome{ margin-bottom: 10px; }
   }
 
   /* ---------- VIEWS ---------- */
@@ -480,7 +465,7 @@
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    background: #F9FBFD;
+    background: #FBFAFE;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
   .field input:focus{
@@ -626,7 +611,7 @@
     line-height: 1.45;
     color: var(--ink);
     white-space: pre-wrap;
-    background: #F9FBFD;
+    background: #FAFAFC;
     min-height: 40px;
   }
   .obs-preview.vazio{
@@ -708,7 +693,7 @@
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    background: #F9FBFD;
+    background: #FBFAFE;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
   .field select:focus{
@@ -735,7 +720,7 @@
     font-size: 13.5px;
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    background: #F9FBFD;
+    background: #FBFAFE;
     resize: vertical;
     min-height: 70px;
     line-height: 1.5;
@@ -746,7 +731,7 @@
     background: white;
   }
   .field textarea[readonly]{
-    background: #F1F4F7;
+    background: #F3F1F8;
     color: var(--ink-soft);
     cursor: not-allowed;
   }
@@ -1037,7 +1022,7 @@
     border-radius: 6px;
     padding: 3px 6px;
     font-size: 12px;
-    background: #F9FBFD;
+    background: #FBFAFE;
   }
 
   .parecer-menu-grid{
@@ -1061,7 +1046,7 @@
   }
   .parecer-menu-card:hover{
     transform: translateY(-3px);
-    box-shadow: 0 14px 28px rgba(46,101,137,0.16);
+    box-shadow: 0 14px 28px rgba(67,142,184,0.14);
   }
   .parecer-menu-card .card-icon{
     width: 52px; height: 52px;
@@ -1078,7 +1063,7 @@
   .app-copyright{
     text-align: center;
     font-size: 11.5px;
-    color: #9AA5AE;
+    color: #8C98A5;
     padding: 18px 20px 26px;
     letter-spacing: 0.3px;
     margin-top: auto;
@@ -1094,147 +1079,128 @@
   #loginGate{
     position: fixed; inset: 0; z-index: 1000;
     display: flex; flex-direction: column;
-    background: #F5F5F5;
-    overflow-y: auto;
+    background: #F5F5F5; overflow-y: auto;
   }
-  .login-top{
-    height: var(--topbar-h); flex-shrink: 0;
-    background: #438EB9; color: #fff;
-    display: flex; align-items: center;
-    padding: 0 24px;
-    font-size: 26px; font-weight: 700;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  .login-bar{
+    flex: 0 0 auto; height: var(--altura-barra);
+    background: var(--barra); color: #fff;
+    display: flex; align-items: center; padding: 0 18px;
+    font-size: 21px; font-weight: 700; letter-spacing: 0.2px;
   }
-  .login-wrap{
-    flex: 1;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px 16px;
+  .login-body{
+    flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 28px 16px; gap: 34px;
   }
   .login-card{
-    background: #fff;
-    width: 100%; max-width: 376px;
-    padding: 20px 20px 18px;
-    display: flex; flex-direction: column; gap: 10px;
-    border-radius: 2px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+    background: #fff; border-radius: 3px;
+    padding: 18px 20px 22px; width: 100%; max-width: 340px;
+    display: flex; flex-direction: column; gap: 11px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.18);
   }
   .login-card h2{
-    margin: 0 0 6px;
-    font-size: 26px; font-weight: 400;
-    color: #438EB9; text-align: center;
+    font-family: 'Inter', sans-serif; font-size: 23px; font-weight: 400; margin: 0 0 2px;
+    color: #4A90C2; text-align: center;
   }
-  .login-card p{ margin: 0; font-size: 12.5px; color: var(--ink-soft); text-align: center; }
-  .login-card label.rotulo{
-    display: flex; flex-direction: column; gap: 4px;
-    font-size: 13px; font-weight: 400; color: #333;
-  }
-  .campo-ico{ position: relative; }
-  .campo-ico input{
-    width: 100%;
-    border: 1px solid #D5D5D5; border-radius: 2px;
-    padding: 8px 32px 8px 8px;
-    font-size: 14px; font-family: 'Inter', sans-serif; color: #333;
+  .login-card .login-aviso{ margin: 0; font-size: 12px; color: var(--ink-soft); text-align: center; }
+  .login-card label{ display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #444; }
+  .login-card .campo{ position: relative; display: block; }
+  .login-card .campo input{
+    width: 100%; border: 1px solid #D5D9DE; border-radius: 3px;
+    padding: 8px 32px 8px 9px; font-size: 13.5px; font-family: 'Inter', sans-serif; color: var(--ink);
     background: #fff;
   }
-  .campo-ico input:focus{ outline: none; border-color: #6FB3E0; }
-  .campo-ico svg{
-    position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
-    width: 14px; height: 14px; fill: #888; pointer-events: none;
+  .login-card .campo input:focus{ outline: none; border-color: #4A90C2; box-shadow: 0 0 0 2px rgba(74,144,194,0.18); }
+  .login-card .campo svg{
+    position: absolute; right: 9px; top: 50%; margin-top: -7px; width: 14px; height: 14px; color: #8A8F95;
   }
-  .login-card label.lembrar{
-    display: flex; flex-direction: row; align-items: center; gap: 6px;
-    font-size: 13px; font-weight: 400; color: #333; cursor: pointer;
+  .login-card .lembrar{ flex-direction: row; align-items: center; gap: 7px; font-size: 12.5px; }
+  .login-card .lembrar input{ width: 15px; height: 15px; accent-color: #3A87C5; }
+  .login-card #btnEntrar{
+    margin-top: 12px; width: 100%; border: 0; border-radius: 3px; cursor: pointer;
+    background: #3A87C5; color: #fff; font-size: 13.5px; font-family: 'Inter', sans-serif; padding: 10px 12px;
   }
-  .login-card label.lembrar input{ width: 14px; height: 14px; margin: 0; accent-color: #438EB9; }
-  .login-card .btn-primary{
-    margin-top: 14px;
-    width: 100%;
-    border-radius: 2px;
-    padding: 10px 12px;
-    font-size: 13px; font-weight: 500;
-    background: #438EB9;
-  }
-  .login-card .btn-primary:hover{ background: #2E6589; }
-  .login-card .link-btn{
-    align-self: flex-end;
-    margin-top: 12px;
-    font-size: 13px; color: #337AB7; text-decoration: none;
-  }
-  .login-card .link-btn:hover{ text-decoration: underline; }
-  .login-card .link-btn.instalar{ align-self: center; margin-top: 2px; }
+  .login-card #btnEntrar:hover{ background: #2F76B0; }
+  .login-card #btnEntrar:disabled{ background: #85B2DC; cursor: not-allowed; }
+  .login-card .login-links{ display: flex; justify-content: flex-end; margin-top: 4px; }
+  .login-card .link-btn{ color: #3A7FAE; font-size: 12.5px; }
+  .login-card #btnInstalarLogin{ align-self: center; margin-top: 4px; }
   .login-card .save-status{ text-align: center; min-height: 16px; }
-  .login-footer{ margin-top: 0; padding-top: 10px; flex-shrink: 0; }
-  @media (max-width: 760px){
-    .login-top{ font-size: 18px; padding: 0 14px; }
-  }
+  .login-copy{ font-size: 12px; color: #8C98A5; text-align: center; letter-spacing: 0.3px; }
   .link-btn[hidden]{ display: none !important; }
 </style>
 </head>
 <body>
 
 <div id="loginGate">
-  <div class="login-top">SCF - ARTUR NOGUEIRA</div>
-  <div class="login-wrap">
+  <div class="login-bar">SCF - ARTUR NOGUEIRA</div>
+  <div class="login-body">
     <form id="loginForm" class="login-card">
       <h2>Acesso</h2>
-      <p id="loginAviso">Entre com seu e-mail e senha.</p>
-      <label class="rotulo">E-mail:
-        <span class="campo-ico">
+      <p class="login-aviso" id="loginAviso">Entre com seu e-mail e senha.</p>
+      <label>E-mail:
+        <span class="campo">
           <input type="email" id="login-email" autocomplete="username" required>
-          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </span>
       </label>
-      <label class="rotulo">Senha:
-        <span class="campo-ico">
+      <label>Senha:
+        <span class="campo">
           <input type="password" id="login-senha" autocomplete="current-password" required>
-          <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         </span>
       </label>
-      <label class="lembrar"><input type="checkbox" id="login-lembrar"> Lembrar meu e-mail</label>
-      <button type="submit" class="btn-primary" id="btnEntrar">Entrar</button>
-      <button type="button" class="link-btn" id="btnEsqueci">Esqueceu a senha?</button>
-      <button type="button" class="link-btn instalar" id="btnInstalarLogin" hidden>Instalar aplicativo no celular</button>
+      <label class="lembrar"><input type="checkbox" id="login-lembrar" checked> Lembrar meu e-mail</label>
+      <button type="submit" id="btnEntrar">Entrar</button>
       <span class="save-status" id="loginStatus"></span>
+      <div class="login-links"><button type="button" class="link-btn" id="btnEsqueci">Esqueceu a senha?</button></div>
+      <button type="button" class="link-btn" id="btnInstalarLogin" hidden>Instalar aplicativo no celular</button>
     </form>
+    <div class="login-copy">© RRM · 2026 · Sistema Conselho Fiscal</div>
   </div>
-  <footer class="app-copyright login-footer">© RRM · 2026 · Sistema Conselho Fiscal</footer>
 </div>
 
-<header class="topbar">
-  <div class="topbar-left">
-    <button type="button" class="menu-toggle" id="btnMenuMobile" aria-label="Abrir menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></button>
-    <div class="topbar-brand">SCF - ARTUR NOGUEIRA</div>
+<div class="app-top">
+  <button type="button" class="hamb" id="btnMenu" aria-label="Abrir menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="app-title">SCF - ARTUR NOGUEIRA</div>
+  <div class="top-right">
+    <div class="tb tb-bell" id="tbBell">
+      <button type="button" id="tbBellBtn" aria-label="Notificações"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="badge" id="bellBadge" hidden>0</span></button>
+      <div class="dropdown" id="ddBell">
+        <div class="dd-title">Notificações</div>
+        <div class="dd-empty">Nenhuma notificação no momento.</div>
+      </div>
+    </div>
+    <div class="tb tb-mes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><div class="tb-t"><small>Mês de Trabalho</small><b data-mes>--/----</b></div></div>
+    <div class="tb tb-un"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h6"/></svg><div class="tb-t"><small>ARTUR NOGUEIRA</small><b id="userLocation">ADM - ARTUR NOGUEIRA - SP</b></div></div>
+    <div class="tb tb-user" id="tbUser">
+      <button type="button" id="tbUserBtn" aria-label="Menu do usuário"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div class="tb-t"><small>Bem-vindo,</small><b id="userEmail"></b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="dropdown" id="ddUser">
+        <div class="dd-line" id="clock">carregando...</div>
+        <button type="button" class="dd-item" id="btnInstalarTopo" hidden>Instalar aplicativo</button>
+        <div class="dd-ver">versão 2026-11-03-celular</div>
+      </div>
+    </div>
+    <button type="button" class="tb tb-sair" id="btnSair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>Sair</button>
   </div>
-  <div class="topbar-right">
-    <div class="tb-box tb-sino" title="Notificações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><span class="tb-badge" id="sinoContador" hidden>0</span></div>
-    <div class="tb-box tb-mes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg><div class="tb-2l"><small>Mês de Trabalho</small><b id="mesTrabalho">--/----</b></div></div>
-    <div class="tb-box tb-unidade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg><div class="tb-2l"><small>ARTUR NOGUEIRA</small><b id="userLocation">ADM - ARTUR NOGUEIRA - SP</b></div></div>
-    <div class="tb-box tb-user"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><div class="tb-2l"><small>Bem-vindo,</small><b id="userEmail"></b></div></div>
-    <button type="button" class="tb-box tb-instalar" id="btnInstalarTopo" hidden>Instalar app</button>
-    <button type="button" class="tb-box tb-sair" id="btnSair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>Sair</button>
-  </div>
-</header>
+</div>
+<div class="info-mobile">Mês de Trabalho <b data-mes>--/----</b> · <span>ADM - ARTUR NOGUEIRA - SP</span></div>
 
-<aside class="sidebar" id="sidebar">
-  <nav class="sb-nav">
-      <div class="nav-item active" data-target="painel" title="Área de Trabalho"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="nav-label">Área de Trabalho</span></div>
-      <div class="nav-item" data-target="distribuidora" title="Distribuidora"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg><span class="nav-label">Distribuidora</span></div>
-      <div class="nav-item" data-target="tesouraria" title="Tesouraria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14V6c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-9-1c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-6v11c0 1.1-.9 2-2 2H4v-2h17V7h2z"/></svg><span class="nav-label">Tesouraria</span></div>
-      <div class="nav-item" data-target="piedade" title="Piedade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg><span class="nav-label">Piedade</span></div>
-      <div class="nav-item" data-target="contabilidade" title="Contabilidade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg><span class="nav-label">Contabilidade</span></div>
-      <div class="nav-item" data-target="parecer" title="Parecer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg><span class="nav-label">Parecer</span></div>
-      <div class="nav-item" data-target="compras" title="Compras"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span class="nav-label">Compras</span></div>
-      <div class="nav-item" data-target="secretaria" title="Secretaria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg><span class="nav-label">Secretaria</span></div>
-  </nav>
-  <div class="sb-collapse"><button type="button" id="btnRecolher" aria-label="Recolher ou expandir o menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div>
-</aside>
-<div class="sb-overlay" id="sbOverlay"></div>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="nav-item active" data-target="painel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span class="lbl">Área de Trabalho</span></div>
+    <div class="nav-item" data-target="distribuidora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg><span class="lbl">Distribuidora</span></div>
+    <div class="nav-item" data-target="tesouraria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg><span class="lbl">Tesouraria</span></div>
+    <div class="nav-item" data-target="piedade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg><span class="lbl">Piedade</span></div>
+    <div class="nav-item" data-target="contabilidade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v3h6V3M8 11h8M8 15h5"/></svg><span class="lbl">Contabilidade</span></div>
+    <div class="nav-item" data-target="parecer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V6a2 2 0 0 1 2-2h9l5 5v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v4a1 1 0 0 0 1 1h4"/><path d="M8 13h8M8 17h5"/></svg><span class="lbl">Parecer</span></div>
+    <div class="nav-item" data-target="compras"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l3 3v17H6z"/><path d="M6 2v20"/><path d="M12 10h4M12 14h4"/></svg><span class="lbl">Compras</span></div>
+    <div class="nav-item" data-target="secretaria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="lbl">Secretaria</span></div>
+    <div class="side-fim"><button type="button" class="btn-recolher" id="btnRecolher" aria-label="Recolher menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></svg></button></div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="app-content">
+    <div class="crumb"><a id="crumbHome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Área de Trabalho</a><span id="crumbSep" hidden>›</span><span id="crumbAtual"></span></div>
 
-<div id="appContent">
-  <div class="breadcrumb-bar">
-    <div class="bc-trail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span id="breadcrumbTrilha"><span class="bc-atual">Área de Trabalho</span></span></div>
-    <div class="bc-info"><div id="clock">carregando...</div><div class="ver">versão 2026-11-03-layout-azul</div></div>
-  </div>
 
 <main>
 
@@ -1252,7 +1218,7 @@
     </div>
 
     <div class="grid">
-      <div class="card" data-view="distribuidora" style="--card-accent:#438EB9; --card-accent-pale:#E6F1F8;">
+      <div class="card" data-view="distribuidora" style="--card-accent:#438EB8; --card-accent-pale:#E8F2F9;">
         <div class="card-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
         </div>
@@ -1308,45 +1274,20 @@
         <div class="desc">Observações do setor</div>
       </div>
 
-      <div class="card ghost">
-        <div class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-        </div>
-        <div class="title">Novo módulo</div>
-        <div class="desc">Adicionar área ao painel</div>
-      </div>
     </div>
 
-    <div class="panel-box" style="margin-top:36px;">
-      <h3>Importar dados do computador (use uma vez só)</h3>
-      <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 14px;">
-        Escolha o arquivo <strong>dados_scf.json</strong> da versão que rodava no computador. Os lançamentos e os PDFs vão para o Firebase.
-        Pode repetir sem medo: o que já existe é atualizado, não duplicado.
-      </p>
-      <div class="form-row">
-        <div class="field">
-          <label for="arquivo-importar-json">Arquivo dados_scf.json</label>
-          <input type="file" id="arquivo-importar-json" accept=".json,application/json">
-        </div>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn-primary" id="btnImportarJson">Importar para o Firebase</button>
-        <span class="save-status" id="statusImportarJson"></span>
-      </div>
-    </div>
 
-    <footer class="hint">Explore o menu ao lado também, se preferir.</footer>
   </div>
 
   <!-- ===== VIEW: DISTRIBUIDORA ===== -->
   <div class="view" id="view-distribuidora">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar à Área de Trabalho
+      Voltar ao painel
     </div>
 
     <div class="module-header">
-      <div class="card-icon" style="--card-accent:#438EB9; --card-accent-pale:#E6F1F8; background:var(--card-accent-pale); color:var(--card-accent);">
+      <div class="card-icon" style="--card-accent:#438EB8; --card-accent-pale:#E8F2F9; background:var(--card-accent-pale); color:var(--card-accent);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
       </div>
       <div>
@@ -1456,7 +1397,7 @@
   <div class="view" id="view-tesouraria">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar à Área de Trabalho
+      Voltar ao painel
     </div>
 
     <div class="module-header">
@@ -1545,7 +1486,7 @@
   <div class="view" id="view-piedade">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar à Área de Trabalho
+      Voltar ao painel
     </div>
 
     <div class="module-header">
@@ -1634,7 +1575,7 @@
   <div class="view" id="view-contabilidade">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar à Área de Trabalho
+      Voltar ao painel
     </div>
 
     <div class="module-header">
@@ -1712,7 +1653,7 @@
           </div>
         </div>
 
-        <div id="revisaoPosicaoAtivo" style="display:none; margin:10px 0 18px; padding:14px; border:1.5px solid var(--purple-pale, #ddd); border-radius:10px; background:#F9FBFD;">
+        <div id="revisaoPosicaoAtivo" style="display:none; margin:10px 0 18px; padding:14px; border:1.5px solid var(--purple-pale, #ddd); border-radius:10px; background:#FAFAFC;">
           <p style="font-size:13px; margin:0 0 10px; font-weight:600;">Conferência de saldos — Posição Ativo (lido por OCR) x Balancete</p>
           <p style="font-size:12px; color:var(--ink-soft); margin:0 0 10px;">
             A leitura da Posição Ativo é automática (OCR), pode vir com erro de dígito. Confira os valores abaixo — pode corrigir direto no campo antes de confirmar.
@@ -1793,7 +1734,7 @@
   <div class="view" id="view-secretaria">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar à Área de Trabalho
+      Voltar ao painel
     </div>
 
     <div class="module-header">
@@ -1836,7 +1777,7 @@
   <div class="view" id="view-parecer">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar à Área de Trabalho
+      Voltar ao painel
     </div>
 
     <div class="module-header">
@@ -1944,7 +1885,7 @@
   <div class="view" id="view-compras">
     <div class="back-link" data-back="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar à Área de Trabalho
+      Voltar ao painel
     </div>
 
     <div class="module-header">
@@ -2053,7 +1994,8 @@
 </main>
 
 <footer class="app-copyright">© RRM · 2026 · Sistema Conselho Fiscal</footer>
-</div><!-- /#appContent -->
+  </div>
+</div>
 
 <!-- Folha de impressão (oculta na tela, visível só ao imprimir) -->
 <div id="printSheet"></div>
@@ -2067,8 +2009,8 @@
     const dataStr = `${dias[now.getDay()]}, ${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
     const horaStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     document.getElementById('clock').textContent = `${dataStr} · ${horaStr}`;
-    const elMes = document.getElementById('mesTrabalho');
-    if(elMes) elMes.textContent = `${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+    const mesTrab = `${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+    document.querySelectorAll('[data-mes]').forEach(el => { el.textContent = mesTrab; });
     document.getElementById('stampDate').textContent = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
   }
   updateClock();
@@ -2076,37 +2018,6 @@
 
   /* ---------- NAVEGAÇÃO ENTRE TELAS ---------- */
   const VIEWS_VALIDAS = ['painel', 'distribuidora', 'tesouraria', 'piedade', 'contabilidade', 'secretaria', 'parecer', 'compras'];
-
-  const NOMES_VIEW = {
-    painel: 'Área de Trabalho', distribuidora: 'Distribuidora', tesouraria: 'Tesouraria',
-    piedade: 'Piedade', contabilidade: 'Contabilidade', parecer: 'Parecer',
-    compras: 'Compras', secretaria: 'Secretaria'
-  };
-
-  function atualizarTrilha(name){
-    const el = document.getElementById('breadcrumbTrilha');
-    if(!el) return;
-    const nome = NOMES_VIEW[name] || 'Área de Trabalho';
-    el.innerHTML = name === 'painel'
-      ? '<span class="bc-atual">Área de Trabalho</span>'
-      : 'Área de Trabalho <span class="bc-sep">›</span> <span class="bc-atual">' + nome + '</span>';
-  }
-
-  /* ---------- MENU LATERAL: recolher (computador) e abrir/fechar (celular) ---------- */
-  function fecharMenuMobile(){ document.body.classList.remove('sb-aberto'); }
-
-  (function(){
-    try { if(localStorage.getItem('scf_menu_recolhido') === '1') document.body.classList.add('sb-collapsed'); } catch(e){}
-    const btnRecolher = document.getElementById('btnRecolher');
-    if(btnRecolher) btnRecolher.addEventListener('click', ()=>{
-      const recolhido = document.body.classList.toggle('sb-collapsed');
-      try { localStorage.setItem('scf_menu_recolhido', recolhido ? '1' : '0'); } catch(e){}
-    });
-    const btnMobile = document.getElementById('btnMenuMobile');
-    if(btnMobile) btnMobile.addEventListener('click', ()=>document.body.classList.toggle('sb-aberto'));
-    const overlay = document.getElementById('sbOverlay');
-    if(overlay) overlay.addEventListener('click', fecharMenuMobile);
-  })();
 
   function switchView(name){
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -2116,32 +2027,69 @@
     document.querySelectorAll('.nav-item').forEach(i=>{
       i.classList.toggle('active', i.dataset.target === name);
     });
-    atualizarTrilha(name);
-    fecharMenuMobile();
-    window.scrollTo(0, 0);
 
     if(MODULOS[name]) recarregarTabela(MODULOS[name]);
     if(OBS_MODULOS[name]) recarregarObservacoes(OBS_MODULOS[name]);
     if(name === 'parecer') carregarPareceres();
     if(name === 'compras') carregarComprasParecer();
+
+    // trilha no alto da página (Área de Trabalho › tela atual)
+    const rotulos = { distribuidora:'Distribuidora', tesouraria:'Tesouraria', piedade:'Piedade',
+                      contabilidade:'Contabilidade', secretaria:'Secretaria', parecer:'Parecer', compras:'Compras' };
+    const sep = document.getElementById('crumbSep'), atual = document.getElementById('crumbAtual');
+    if(sep && atual){
+      sep.hidden = (name === 'painel');
+      atual.textContent = rotulos[name] || '';
+    }
+    document.body.classList.remove('menu-open');
   }
+
+  /* ---------- BOTÃO VOLTAR (celular e navegador) ----------
+     Cada tela aberta entra no histórico do navegador. Assim o botão voltar do celular
+     retorna à tela anterior do sistema e só sai do aplicativo quando já está no Painel. */
+  const pilhaViews = ['painel']; // telas abertas nesta visita, da primeira à atual
+  try { history.replaceState({ scfView: 'painel' }, ''); } catch (err) { /* sem histórico: segue sem o recurso */ }
+
+  function irPara(name){
+    const atual = pilhaViews[pilhaViews.length - 1];
+    if(name === atual){ switchView(name); return; }
+    if(name === 'painel'){
+      // "Voltar ao painel": desfaz de uma vez as telas empilhadas
+      const n = pilhaViews.length - 1;
+      pilhaViews.length = 1;
+      switchView('painel');
+      try { history.go(-n); } catch (err) { /* ignora */ }
+      return;
+    }
+    pilhaViews.push(name);
+    try { history.pushState({ scfView: name }, ''); } catch (err) { /* ignora */ }
+    switchView(name);
+  }
+
+  window.addEventListener('popstate', (e)=>{
+    const v = (e.state && e.state.scfView) || 'painel';
+    if(!VIEWS_VALIDAS.includes(v)) return;
+    const i = pilhaViews.lastIndexOf(v);
+    if(i >= 0) pilhaViews.length = i + 1; else pilhaViews.push(v);
+    switchView(v);
+  });
 
   document.querySelectorAll('.nav-item').forEach(item=>{
     item.addEventListener('click', ()=>{
       const target = item.dataset.target;
-      if(VIEWS_VALIDAS.includes(target)) switchView(target);
+      if(VIEWS_VALIDAS.includes(target)) irPara(target);
     });
   });
 
   document.querySelectorAll('.card:not(.ghost)').forEach(card=>{
     card.addEventListener('click', ()=>{
       const target = card.dataset.view;
-      if(target) switchView(target);
+      if(target) irPara(target);
     });
   });
 
   document.querySelectorAll('[data-back="true"]').forEach(el=>{
-    el.addEventListener('click', ()=>switchView('painel'));
+    el.addEventListener('click', ()=>irPara('painel'));
   });
 
   /* ---------- BANCO DE DADOS (Firebase: login + Firestore) ----------
@@ -4719,24 +4667,55 @@
     });
   }
 
-  /* ---------- LEMBRAR MEU E-MAIL (tela de login) ---------- */
-  (function(){
+
+  /* ---------- LAYOUT: menu lateral, menus do topo, lembrar e-mail ---------- */
+  function iniciarLayout(){
+    const sidebar = document.getElementById('sidebar');
+    const CHAVE_MENU = 'scfMenuRecolhido';
+    try { if(localStorage.getItem(CHAVE_MENU) === '1') sidebar.classList.add('collapsed'); } catch (err) { /* sem armazenamento */ }
+    document.getElementById('btnRecolher').addEventListener('click', ()=>{
+      const recolhido = sidebar.classList.toggle('collapsed');
+      try { localStorage.setItem(CHAVE_MENU, recolhido ? '1' : '0'); } catch (err) { /* ignora */ }
+    });
+
+    // celular: menu lateral abre como gaveta
+    document.getElementById('btnMenu').addEventListener('click', ()=>document.body.classList.toggle('menu-open'));
+    document.getElementById('sidebarOverlay').addEventListener('click', ()=>document.body.classList.remove('menu-open'));
+    document.getElementById('crumbHome').addEventListener('click', ()=>irPara('painel'));
+
+    // menus suspensos do sino e do usuário
+    const pares = [['tbBellBtn', 'ddBell'], ['tbUserBtn', 'ddUser']];
+    const fecharTodos = ()=>pares.forEach(([, dd])=>document.getElementById(dd).classList.remove('open'));
+    pares.forEach(([btn, dd])=>{
+      document.getElementById(btn).addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const painel = document.getElementById(dd);
+        const abrir = !painel.classList.contains('open');
+        fecharTodos();
+        if(abrir) painel.classList.add('open');
+      });
+    });
+    document.querySelectorAll('.dropdown').forEach(d => d.addEventListener('click', e => e.stopPropagation()));
+    document.addEventListener('click', fecharTodos);
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ fecharTodos(); document.body.classList.remove('menu-open'); } });
+
+    // lembrar o e-mail digitado neste aparelho
+    const CHAVE_EMAIL = 'scfEmailLembrado';
     const campoEmail = document.getElementById('login-email');
-    const caixa = document.getElementById('login-lembrar');
-    if(!campoEmail || !caixa) return;
+    const caixaLembrar = document.getElementById('login-lembrar');
     try {
-      const guardado = localStorage.getItem('scf_email_lembrado');
-      if(guardado){ campoEmail.value = guardado; caixa.checked = true; }
-    } catch(e){}
+      const guardado = localStorage.getItem(CHAVE_EMAIL);
+      if(guardado){ campoEmail.value = guardado; caixaLembrar.checked = true; }
+    } catch (err) { /* sem armazenamento */ }
     document.getElementById('loginForm').addEventListener('submit', ()=>{
       try {
-        if(caixa.checked) localStorage.setItem('scf_email_lembrado', campoEmail.value.trim());
-        else localStorage.removeItem('scf_email_lembrado');
-      } catch(e){}
+        if(caixaLembrar.checked) localStorage.setItem(CHAVE_EMAIL, campoEmail.value.trim());
+        else localStorage.removeItem(CHAVE_EMAIL);
+      } catch (err) { /* ignora */ }
     });
-  })();
+  }
 
-  ligarImportacaoJson();
+  iniciarLayout();
   iniciarFirebase();
 </script>
 
