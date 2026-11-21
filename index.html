@@ -4277,18 +4277,28 @@
   function parseValorPlanilha(v){
     if (v == null || v === '') return 0;
     if (typeof v === 'number') return v;
-    const limpo = String(v)
-      .replace(/[^\d.,-]/g, '')  // tira "R$", espaços e qualquer coisa que não seja dígito/ponto/vírgula/sinal
-      .trim()
-      .replace(/\./g, '')       // tira separador de milhar
-      .replace(',', '.');       // vírgula decimal -> ponto
-    return parseFloat(limpo) || 0;
+    let t = String(v).replace(/[^\d.,-]/g, '').trim(); // tira "R$", espaços etc.
+    if (!t) return 0;
+    const temPonto = t.includes('.'), temVirg = t.includes(',');
+    if (temPonto && temVirg){
+      // o último separador é o decimal; o outro é milhar
+      if (t.lastIndexOf(',') > t.lastIndexOf('.')) t = t.replace(/\./g, '').replace(',', '.');
+      else t = t.replace(/,/g, '');
+    } else if (temVirg){
+      t = t.replace(/\./g, '').replace(',', '.');          // 1234,56 ou 1.234,56
+    } else if (temPonto){
+      // só ponto: "2499.98" é decimal; "1.600" / "1.234.567" é milhar (padrão BR)
+      if (/^-?\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+    }
+    return parseFloat(t) || 0;
   }
 
   function parseExportacaoCrua(workbook){
     const nomeAba = workbook.SheetNames[0];
     const sheet = workbook.Sheets[nomeAba];
     const linhas = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' });
+    // segunda leitura, sem formatar: o Valor vem como número de verdade (2499.98), sem ambiguidade de ponto/vírgula
+    const linhasNum = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
     // primeira linha = cabeçalho; descobre os índices pelas colunas (ignora a 1ª coluna "Ações"/código)
     const cabecalho = linhas[0].map(h => String(h || '').trim().toLowerCase());
@@ -4318,7 +4328,7 @@
         serie: idx.serie >= 0 ? String(linha[idx.serie] || '') : '',
         numero: idx.numero >= 0 ? String(linha[idx.numero] || '') : '',
         remetente: idx.remetente >= 0 ? String(linha[idx.remetente] || '') : '',
-        valor: idx.valor >= 0 ? parseValorPlanilha(linha[idx.valor]) : 0,
+        valor: idx.valor >= 0 ? parseValorPlanilha((linhasNum[i] && linhasNum[i][idx.valor] != null) ? linhasNum[i][idx.valor] : linha[idx.valor]) : 0,
         statusDocto: idx.statusDocto >= 0 ? String(linha[idx.statusDocto] || '') : '',
         docto: idx.docto >= 0 ? String(linha[idx.docto] || '') : '',
         numeroCotacao: idx.numeroCotacao >= 0 ? String(linha[idx.numeroCotacao] || '') : '',
